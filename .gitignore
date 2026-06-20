@@ -10,3 +10,4 @@ data/
 dist/
 build/
 tests/openlca-case.local.json
+.env.openlca.local

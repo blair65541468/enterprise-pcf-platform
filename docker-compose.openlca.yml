@@ -1,0 +1,21 @@
+name: pcf-openlca
+
+services:
+  openlca:
+    build:
+      context: ${OPENLCA_GDT_SERVER_CONTEXT:?Set OPENLCA_GDT_SERVER_CONTEXT}
+    command: ["-db", "${OPENLCA_DATABASE_NAME:?Set OPENLCA_DATABASE_NAME}", "--readonly"]
+    ports:
+      - "127.0.0.1:${OPENLCA_HOST_PORT:-8080}:8080"
+    volumes:
+      - type: bind
+        source: ${OPENLCA_WORKSPACE_PATH:?Set OPENLCA_WORKSPACE_PATH}
+        target: /app/data
+        read_only: true
+    environment:
+      JAVA_MAX_RAM_PERCENTAGE: ${OPENLCA_JAVA_MAX_RAM_PERCENTAGE:-80}
+    mem_limit: ${OPENLCA_CONTAINER_MEMORY:-12g}
+    init: true
+    stop_grace_period: 30s
+    security_opt:
+      - no-new-privileges:true

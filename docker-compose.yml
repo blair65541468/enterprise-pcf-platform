@@ -64,18 +64,6 @@ services:
     volumes:
       - ../:/workspace:ro
 
-  # Build and enable this profile only after confirming the GreenDelta
-  # network-use licence and mounting an approved openLCA workspace.
-  openlca:
-    profiles: ["licensed-openlca"]
-    build: https://github.com/GreenDelta/gdt-server.git#main
-    command: ["-db", "${OPENLCA_DATABASE_NAME:-wardrobe-pcf}", "--readonly"]
-    volumes:
-      - ${OPENLCA_WORKSPACE_PATH:-./data/openlca}:/app/data:ro
-    mem_limit: 12g
-    expose:
-      - "8080"
-
 volumes:
   postgres-data:
   minio-data:

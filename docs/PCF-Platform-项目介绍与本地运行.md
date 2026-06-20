@@ -61,7 +61,7 @@ python --version
 ```
 
 预期输出为 `Python 3.12.x` 或 `Python 3.13.x`。项目声明支持 Python
-`>=3.12,<3.14`，本文的测试基线使用 Python 3.12.13。
+`>=3.12,<3.14`，当前测试基线使用 Python 3.13.4。
 
 ### 3.2 创建环境并安装依赖
 
@@ -186,10 +186,10 @@ version : deterministic-factor-1
 
 截至 2026 年 6 月 20 日的已验证基线：
 
-- Python：`3.12.13`
+- Python：`3.13.4`
 - 服务健康检查：`{"status":"ok"}`
 - 最小端到端测试：通过
-- 完整测试集：`6 passed`
+- 完整测试集：`11 passed, 2 skipped`（真实 openLCA 测试默认跳过）
 
 测试过程中会出现一条来自 FastAPI TestClient/Starlette 的第三方弃用警告。该警告不影响当前测试结论，但后续升级相关依赖时需要重新检查兼容性。
 
