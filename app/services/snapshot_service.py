@@ -12,14 +12,16 @@ from app.models import (
     EmissionFactor,
     EnergyActivity,
     FactorVersion,
-    MaterialProcessMapping,
     MappingStatus,
+    MaterialProcessMapping,
     ProcessRoute,
     Product,
     ProductVersion,
     RouteStep,
     TransportActivity,
 )
+from app.modules.catalog.units import UnitConversionError, convert_activity_amount
+from app.modules.snapshots.contracts import SnapshotPayload
 from app.utils import hash_payload
 
 
@@ -97,27 +99,28 @@ class SnapshotService:
                 errors.append({"code": "BOM_WEIGHT_MISSING", "line": line.line_no})
                 continue
             mass_kg = Decimal(line.quantity) * Decimal(line.weight_kg_each)
-            if factor.activity_unit.lower() in {"kg", "kilogram"}:
-                activity_amount = mass_kg
-            elif factor.activity_unit.lower() in {"m³", "m3"}:
-                if not factor.density_kg_m3:
-                    errors.append(
-                        {
-                            "code": "DENSITY_MISSING",
-                            "line": line.line_no,
-                            "material": line.material.code,
-                            "message": "kg to m³ conversion requires density_kg_m3",
-                        }
-                    )
-                    continue
-                activity_amount = mass_kg / Decimal(factor.density_kg_m3)
-            else:
+            try:
+                activity_amount = convert_activity_amount(
+                    quantity=Decimal(line.quantity),
+                    weight_kg_each=Decimal(line.weight_kg_each),
+                    activity_unit=factor.activity_unit,
+                    density_kg_m3=(
+                        Decimal(factor.density_kg_m3) if factor.density_kg_m3 else None
+                    ),
+                )
+            except UnitConversionError:
+                code = (
+                    "DENSITY_MISSING"
+                    if factor.activity_unit.lower() in {"m³", "m3"}
+                    else "UNIT_CONVERSION_MISSING"
+                )
                 errors.append(
                     {
-                        "code": "UNIT_CONVERSION_MISSING",
+                        "code": code,
                         "line": line.line_no,
                         "from": line.unit,
                         "to": factor.activity_unit,
+                        "material": line.material.code,
                     }
                 )
                 continue
@@ -170,20 +173,22 @@ class SnapshotService:
 
         energy_payload = self._energy_payload(product_version, route, errors, stage_estimates, openlca_parameters)
         transport_payload = self._transport_payload(product_version, errors, stage_estimates, openlca_parameters)
-        payload = {
-            "sku": product.sku,
-            "product_name": product.name,
-            "functional_unit": f"1 completed and packaged {product.name} at factory gate",
-            "boundary": boundary,
-            "factor_set_version": factor_set_version,
-            "product_version": product_version.version,
-            "route_version": route_version,
-            "bom": bom_payload,
-            "energy": energy_payload,
-            "transport": transport_payload,
-            "openlca_parameters": openlca_parameters,
-            "stage_estimates": {k: str(v) for k, v in stage_estimates.items()},
-        }
+        payload_model = SnapshotPayload(
+            schema_version=1,
+            sku=product.sku,
+            product_name=product.name,
+            functional_unit=f"1 completed and packaged {product.name} at factory gate",
+            boundary=boundary,
+            factor_set_version=factor_set_version,
+            product_version=product_version.version,
+            route_version=route_version,
+            bom=bom_payload,
+            energy=energy_payload,
+            transport=transport_payload,
+            openlca_parameters=openlca_parameters,
+            stage_estimates={key: str(value) for key, value in stage_estimates.items()},
+        )
+        payload = payload_model.model_dump(mode="json")
         if errors:
             raise SnapshotValidationError(errors)
         version = int(
@@ -217,8 +222,7 @@ class SnapshotService:
             after_hash=snapshot.manifest_hash,
             details={"sku": sku, "version": version},
         )
-        self.db.commit()
-        self.db.refresh(snapshot)
+        self.db.flush()
         return snapshot
 
     def _energy_payload(
@@ -353,4 +357,3 @@ class SnapshotService:
                 }
             )
         return payload
-

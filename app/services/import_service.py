@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import io
 from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from openpyxl import load_workbook
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.audit import record_audit
+from app.core.metrics import IMPORTS
 from app.models import (
     BomLine,
     EmissionFactor,
@@ -26,6 +25,7 @@ from app.models import (
     RouteStep,
     Supplier,
 )
+from app.modules.imports.excel import ExcelImportAdapter
 from app.storage import ObjectStorage
 from app.utils import as_decimal, hash_payload, json_safe, sha256_bytes
 
@@ -41,20 +41,6 @@ def _header(headers: list[str], needle: str, required: bool = True) -> str | Non
     if required and not found:
         raise ValueError(f"Required column not found: {needle}")
     return found
-
-
-def _read_xlsx(data: bytes) -> tuple[list[str], list[dict[str, Any]]]:
-    ws = load_workbook(io.BytesIO(data), read_only=True, data_only=True).active
-    values = list(ws.iter_rows(values_only=True))
-    if not values:
-        return [], []
-    headers = [_text(v) for v in values[0]]
-    unique_headers: list[str] = []
-    counts: Counter[str] = Counter()
-    for header in headers:
-        counts[header] += 1
-        unique_headers.append(header if counts[header] == 1 else f"{header}__{counts[header]}")
-    return unique_headers, [dict(zip(unique_headers, row)) for row in values[1:] if any(v is not None for v in row)]
 
 
 def _issue(
@@ -89,10 +75,32 @@ def _factor_code(material_code: str) -> str:
     return f"CF{material_code[2:]}" if material_code.startswith("RM") else f"CF-{material_code}"
 
 
+class ImportProcessingError(RuntimeError):
+    def __init__(
+        self,
+        *,
+        job_id: str,
+        actor: str,
+        manifest: list[dict[str, Any]],
+        cause: Exception,
+    ):
+        super().__init__(str(cause))
+        self.job_id = job_id
+        self.actor = actor
+        self.manifest = manifest
+        self.cause = cause
+
+
 class ExcelImportService:
-    def __init__(self, db: Session, storage: ObjectStorage):
+    def __init__(
+        self,
+        db: Session,
+        storage: ObjectStorage,
+        adapter: ExcelImportAdapter | None = None,
+    ):
         self.db = db
         self.storage = storage
+        self.adapter = adapter or ExcelImportAdapter()
 
     def import_files(self, files: list[tuple[str, bytes]], actor: str) -> ImportJob:
         manifest = []
@@ -101,24 +109,40 @@ class ExcelImportService:
         self.db.flush()
 
         parsed: list[tuple[str, bytes, list[str], list[dict[str, Any]]]] = []
-        for file_name, data in files:
-            digest = sha256_bytes(data)
-            key = f"imports/{job.id}/{digest}-{Path(file_name).name}"
+        batch = self.adapter.parse(files)
+        for item in batch.files:
+            key = f"imports/{job.id}/{item.sha256}-{Path(item.name).name}"
             self.storage.put(
                 key,
-                data,
+                item.content,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
-            headers, rows = _read_xlsx(data)
-            parsed.append((file_name, data, headers, rows))
-            manifest.append({"file_name": file_name, "sha256": digest, "object_key": key, "rows": len(rows)})
-            duplicates = [k for k, n in Counter(h.split("__")[0] for h in headers).items() if k and n > 1]
+            if sha256_bytes(self.storage.get(key)) != item.sha256:
+                raise RuntimeError(f"Stored import failed SHA-256 verification: {item.name}")
+            headers = list(item.headers)
+            rows = list(item.rows)
+            parsed.append((item.name, item.content, headers, rows))
+            manifest.append(
+                {
+                    "file_name": item.name,
+                    "sha256": item.sha256,
+                    "object_key": key,
+                    "rows": len(rows),
+                }
+            )
+            duplicates = [
+                key
+                for key, count in Counter(
+                    header.split("__")[0] for header in headers
+                ).items()
+                if key and count > 1
+            ]
             if duplicates:
                 _issue(
                     self.db,
                     job,
                     "warning",
-                    file_name,
+                    item.name,
                     "DUPLICATE_HEADERS",
                     f"Duplicate headers were renamed during import: {duplicates}",
                 )
@@ -164,21 +188,16 @@ class ExcelImportService:
                 after_hash=hash_payload({"manifest": manifest, "summary": dict(counts)}),
                 details={"status": job.status.value},
             )
-            self.db.commit()
-            self.db.refresh(job)
+            self.db.flush()
+            IMPORTS.labels(job.status.value).inc()
             return job
         except Exception as exc:
-            self.db.rollback()
-            # Persist a failed import job after rollback.
-            job = self.db.get(ImportJob, job.id) or ImportJob(
-                id=job.id, status=ImportStatus.failed, created_by=actor, file_manifest=manifest
-            )
-            job.status = ImportStatus.failed
-            job.summary = {"error": str(exc)}
-            job.completed_at = datetime.now(timezone.utc)
-            self.db.add(job)
-            self.db.commit()
-            raise
+            raise ImportProcessingError(
+                job_id=job.id,
+                actor=actor,
+                manifest=manifest,
+                cause=exc,
+            ) from exc
 
     @staticmethod
     def _is_factor_file(name: str) -> bool:

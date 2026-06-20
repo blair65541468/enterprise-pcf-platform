@@ -2,6 +2,7 @@ from decimal import Decimal
 from typing import Any
 
 from app.engines.base import EngineContribution, EngineResult
+from app.modules.calculations.contracts import CalculationInput, ModelTemplateConfig
 
 
 class MockCalculationEngine:
@@ -12,10 +13,10 @@ class MockCalculationEngine:
 
     def calculate(
         self,
-        snapshot: dict[str, Any],
-        template: dict[str, Any],
-        impact_method: str,
+        calculation_input: CalculationInput,
+        template: ModelTemplateConfig,
     ) -> EngineResult:
+        snapshot = calculation_input.snapshot.model_dump(mode="json")
         contributions: list[EngineContribution] = []
         stages = {
             "raw_materials": Decimal("0"),
@@ -82,8 +83,7 @@ class MockCalculationEngine:
             raw={
                 "engine": "mock",
                 "warning": "This deterministic engine is for integration tests only, not an ISO 14067 result.",
-                "impact_method": impact_method,
-                "template": template,
+                "impact_method": calculation_input.impact_method,
+                "template": template.model_dump(mode="json"),
             },
         )
-

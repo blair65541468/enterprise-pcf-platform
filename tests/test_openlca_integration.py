@@ -13,7 +13,8 @@ import pytest
 
 from app.config import settings
 from app.engines.openlca import OpenLcaRestEngine
-
+from app.modules.calculations.contracts import CalculationInput, ModelTemplateConfig
+from app.modules.snapshots.contracts import SnapshotPayload
 
 pytestmark = pytest.mark.openlca_integration
 
@@ -212,20 +213,32 @@ def test_openlca_baseline_calculation(
 ):
     case = openlca_test_case
     result = openlca_engine.calculate(
-        snapshot={
-            "openlca_parameters": {
-                name: str(value) for name, value in case.parameters.items()
-            },
-            "stage_estimates": {},
-        },
-        template={
-            "product_system_uuid": case.product_system_uuid,
-            "impact_method_uuid": case.impact_method_uuid,
-            "database_version": "openlca-integration-test",
-            "parameter_contexts": case.parameter_contexts,
-            "stage_process_uuids": case.stage_process_uuids,
-        },
-        impact_method=case.impact_method,
+        CalculationInput(
+            snapshot=SnapshotPayload(
+                sku="openlca-integration-test",
+                product_name="openLCA integration test",
+                functional_unit="configured test case",
+                boundary="configured",
+                factor_set_version="configured",
+                product_version=1,
+                route_version="configured",
+                bom=[],
+                energy=[],
+                transport=[],
+                openlca_parameters={
+                    name: str(value) for name, value in case.parameters.items()
+                },
+                stage_estimates={},
+            ),
+            impact_method=case.impact_method,
+        ),
+        ModelTemplateConfig(
+            product_system_uuid=case.product_system_uuid,
+            impact_method_uuid=case.impact_method_uuid,
+            database_version="openlca-integration-test",
+            parameter_contexts=case.parameter_contexts,
+            stage_process_uuids=case.stage_process_uuids,
+        ),
     )
 
     assert result.engine_version.strip()

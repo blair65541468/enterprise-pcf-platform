@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.auth import Principal, require_role
 from app.db import get_db
-from app.schemas import SnapshotCreate, SnapshotOut
+from app.modules.snapshots.schemas import SnapshotCreate, SnapshotOut
 from app.services.snapshot_service import SnapshotService, SnapshotValidationError
 
 router = APIRouter(prefix="/v1/products", tags=["products"])
@@ -28,4 +28,3 @@ def create_snapshot(
         raise HTTPException(status_code=422, detail={"code": "SNAPSHOT_INVALID", "errors": exc.errors}) from exc
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-

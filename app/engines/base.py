@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 from typing import Any, Protocol
 
+from app.modules.calculations.contracts import CalculationInput, ModelTemplateConfig
+
 
 @dataclass
 class EngineContribution:
@@ -29,8 +31,6 @@ class CalculationEngine(Protocol):
 
     def calculate(
         self,
-        snapshot: dict[str, Any],
-        template: dict[str, Any],
-        impact_method: str,
+        calculation_input: CalculationInput,
+        template: ModelTemplateConfig,
     ) -> EngineResult: ...
-

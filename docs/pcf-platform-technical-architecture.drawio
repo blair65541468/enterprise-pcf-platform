@@ -1,0 +1,422 @@
+<mxfile host="65bd71144e" compressed="false">
+    <diagram id="page-system-context" name="1-系统上下文">
+        <mxGraphModel dx="1902" dy="642" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+            <root>
+                <mxCell id="p1-0"/>
+                <mxCell id="p1-1" parent="p1-0"/>
+                <mxCell id="p1-title" value="PCF Platform 技术架构 — 系统上下文" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#1F2937;" parent="p1-1" vertex="1">
+                    <mxGeometry x="40" y="25" width="900" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-subtitle" value="企业业务数据 → 可审核计算快照 → openLCA 计算 → 审批与结果交付" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=14;fontColor=#4B5563;" parent="p1-1" vertex="1">
+                    <mxGeometry x="42" y="70" width="1000" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-business-boundary" value="业务与外部系统" style="swimlane;html=1;rounded=1;startSize=34;horizontal=1;fillColor=#F5F3FF;strokeColor=#8B5CF6;fontColor=#5B21B6;fontStyle=1;dashed=0;" parent="p1-1" vertex="1">
+                    <mxGeometry x="40" y="125" width="330" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-platform-boundary" value="PCF Platform（本仓库已实现）" style="swimlane;html=1;rounded=1;startSize=34;horizontal=1;fillColor=#EFF6FF;strokeColor=#2563EB;fontColor=#1D4ED8;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="470" y="125" width="550" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-lca-boundary" value="LCA 计算与模型管理" style="swimlane;html=1;rounded=1;startSize=34;horizontal=1;fillColor=#FFF7ED;strokeColor=#EA580C;fontColor=#C2410C;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="1120" y="125" width="620" height="700" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-user" value="业务用户&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;数据提交 / 审批 / 查询&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="90" y="190" width="220" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-fanruan" value="帆软低代码平台&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;基础数据维护与业务界面&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;dashed=1;dashPattern=6 4;" parent="p1-1" vertex="1">
+                    <mxGeometry x="90" y="315" width="220" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-excel" value="Excel 业务数据&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;产品 / BOM / 因子 / 工艺路线&lt;/font&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="90" y="445" width="220" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-oidc" value="OIDC 身份服务&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;JWT / Roles&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="90" y="595" width="220" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-lca-expert" value="LCA 专家&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;离线建模 / 审核 / 基准计算&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="90" y="720" width="220" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-api" value="FastAPI 接口层&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;导入 / 快照 / 计算 / 审批 / 管理 / 健康检查&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="545" y="190" width="400" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-output" value="PCF 结果交付&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;JSON / Excel&lt;br&gt;贡献明细 / 审计链&lt;/font&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="790" y="520" width="155" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-gdt" value="gdt-server&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;openLCA REST API :8080&lt;br&gt;只读计算服务&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="1180" y="200" width="220" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-olca-db" value="openLCA 工作区数据库&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Product System&lt;br&gt;Impact Method / Process&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="1460" y="190" width="220" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-desktop" value="openLCA Desktop 2.6.2&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;建模 / UUID 管理 / 独立基准&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="1180" y="470" width="220" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-release" value="审核后的模型发布包&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;.zolca / 版本化工作区&lt;br&gt;baseline + manifest&lt;/font&gt;" style="shape=folder;tabWidth=45;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="1460" y="455" width="220" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-user-api" value="HTTP / Swagger" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4F46E5;fontColor=#374151;curved=1;" parent="p1-1" source="p1-user" target="p1-api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-excel-api" value="XLSX 上传" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4F46E5;fontColor=#374151;curved=1;" parent="p1-1" source="p1-excel" target="p1-api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-fanruan-api" value="待建设 API 集成" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;strokeColor=#6B7280;fontColor=#4B5563;dashed=1;dashPattern=6 4;curved=1;" parent="p1-1" source="p1-fanruan" target="p1-api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-oidc-api" value="OIDC / JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#4F46E5;fontColor=#374151;curved=1;" parent="p1-1" source="p1-oidc" target="p1-api" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-api-core" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" parent="p1-1" source="p1-api" target="p1-core" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-core-data" value="版本化数据" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;fontColor=#374151;curved=1;" parent="p1-1" source="p1-core" target="p1-data" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-core-output" value="Approved 结果" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;fontColor=#374151;curved=1;" parent="p1-1" source="p1-core" target="p1-output" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-core-gdt" value="REST 计算请求" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;fontColor=#7C2D12;curved=1;" parent="p1-1" source="p1-core" target="p1-gdt" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-gdt-db" value="只读访问" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontColor=#14532D;" parent="p1-1" source="p1-gdt" target="p1-olca-db" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-expert-desktop" value="建模与审核" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;fontColor=#4C1D95;curved=1;" parent="p1-1" source="p1-lca-expert" target="p1-desktop" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-desktop-release" value="导出 / 发布" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;fontColor=#7C2D12;" parent="p1-1" source="p1-desktop" target="p1-release" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-e-release-db" value="离线部署" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;strokeColor=#6B7280;fontColor=#4B5563;dashed=1;dashPattern=6 4;" parent="p1-1" source="p1-release" target="p1-olca-db" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-legend" value="图例：  蓝色 = PCF 应用　绿色 = 数据/制品　橙色 = openLCA　紫色 = 外部系统　灰色虚线 = 外部维护或待建设" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontColor=#374151;fontSize=12;align=left;spacingLeft=12;" parent="p1-1" vertex="1">
+                    <mxGeometry x="40" y="875" width="1700" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-core" value="PCF 业务服务&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;Excel 适配 · 数据门禁 · 不可变快照&lt;br&gt;异步计算 · 四眼审批 · 审计与导出&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="545" y="330" width="400" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-data" value="平台数据与制品&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;PostgreSQL / SQLite&lt;br&gt;MinIO / 本地对象目录&lt;br&gt;审计事件 / manifest hash&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" parent="p1-1" vertex="1">
+                    <mxGeometry x="545" y="520" width="190" height="150" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-note-fanruan" value="当前仓库尚未实现帆软专用连接器；&lt;br&gt;现阶段通过 Excel / HTTP API 接入。" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;fontSize=11;" parent="p1-1" vertex="1">
+                    <mxGeometry x="545" y="710" width="400" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="p1-lca-warning" value="Desktop 与 gdt-server 不应同时访问同一工作区。" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;fontSize=11;" parent="p1-1" vertex="1">
+                    <mxGeometry x="1180" y="660" width="500" height="70" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="page-application-architecture" name="2-应用逻辑架构">
+        <mxGraphModel dx="2000" dy="1180" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1180" math="0" shadow="0">
+            <root>
+                <mxCell id="p2-0"/>
+                <mxCell id="p2-1" parent="p2-0"/>
+                <mxCell id="p2-title" value="PCF Platform 技术架构 — 应用逻辑与核心数据流" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="p2-1">
+                    <mxGeometry x="40" y="25" width="1100" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-input-excel" value="Excel 数据包&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;产品 / BOM / 因子 / 工艺&lt;/font&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="35" y="185" width="150" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-user" value="API 使用者&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;业务用户 / 系统调用方&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="35" y="90" width="150" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-output" value="Approved 输出&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;JSON / Excel / 审计链&lt;/font&gt;" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1815" y="440" width="150" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-gdt-external" value="gdt-server&lt;br&gt;&lt;font style=&quot;font-size:11px&quot;&gt;openLCA REST&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1815" y="720" width="150" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-boundary" value="API 与认证层" style="swimlane;html=1;rounded=1;startSize=32;horizontal=1;fillColor=#EFF6FF;strokeColor=#2563EB;fontColor=#1D4ED8;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="220" y="85" width="1550" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-auth" value="认证授权&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;OIDC JWT&lt;br&gt;或本地 Headers&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="255" y="150" width="160" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-import" value="/v1/imports&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Excel 上传 / 状态&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="445" y="150" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-products" value="/v1/products&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;创建冻结快照&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="655" y="150" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-calcs" value="/v1/calculations&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;计算 / 贡献 / 导出&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="865" y="150" width="190" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-approval" value="审批接口&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;submit / approve / reject&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1085" y="150" width="190" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-admin" value="/v1/admin&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;因子 / 映射 / 路线 / 模板&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1305" y="150" width="190" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-api-health" value="/health&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;DB / openLCA 健康检查&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1525" y="150" width="180" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-service-boundary" value="业务服务层" style="swimlane;html=1;rounded=1;startSize=32;horizontal=1;fillColor=#EFF6FF;strokeColor=#2563EB;fontColor=#1D4ED8;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="220" y="330" width="1550" height="230" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-svc-import" value="ExcelImportService&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;适配 / SHA-256&lt;br&gt;行级问题清单&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="280" y="400" width="190" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-svc-snapshot" value="SnapshotService&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;审批 / 单位 / 密度&lt;br&gt;运输 / openLCA 映射门禁&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="505" y="400" width="220" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-svc-calc" value="CalculationService&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;幂等任务 / 结果一致性&lt;br&gt;阶段与 ISO 分类对账&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="760" y="400" width="220" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-svc-approval" value="ApprovalService&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;四眼审批&lt;br&gt;Superseded 版本控制&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1015" y="400" width="200" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-svc-export" value="ExportService&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Approved JSON / Excel&lt;br&gt;多工作表交付&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1250" y="400" width="200" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-svc-audit" value="审计与哈希&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;append-only events&lt;br&gt;canonical manifest hash&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BFDBFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1485" y="400" width="200" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-engine-boundary" value="任务与计算引擎层" style="swimlane;html=1;rounded=1;startSize=32;horizontal=1;fillColor=#FFF7ED;strokeColor=#EA580C;fontColor=#C2410C;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="220" y="600" width="1550" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-celery" value="Celery Task&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;pcf.calculate&lt;br&gt;重试 / 超时 / 单并发&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="480" y="665" width="200" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-selector" value="Engine Selector&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;OPENLCA_ENGINE&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="780" y="660" width="170" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-mock" value="MockCalculationEngine&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;确定性因子计算&lt;br&gt;仅集成测试&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1060" y="625" width="220" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-openlca-engine" value="OpenLcaRestEngine&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Product System / Method&lt;br&gt;参数重定义 / 结果释放&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1060" y="720" width="220" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-engine-result" value="EngineResult&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;总量 / ISO 分类 / 阶段&lt;br&gt;贡献明细 / raw JSON&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1410" y="665" width="220" height="95" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-data-boundary" value="数据与制品层" style="swimlane;html=1;rounded=1;startSize=32;horizontal=1;fillColor=#F0FDF4;strokeColor=#16A34A;fontColor=#15803D;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="220" y="850" width="1550" height="210" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-orm" value="SQLAlchemy + Alembic&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;版本化关系模型&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="315" y="920" width="210" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-rel-db" value="关系数据库&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;PostgreSQL / SQLite&lt;br&gt;主数据 · 快照 · 运行 · 结果&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="625" y="900" width="230" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-object-store" value="对象存储&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;MinIO/S3 或本地目录&lt;br&gt;源 XLSX · 原始计算 JSON&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="995" y="900" width="230" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-audit-store" value="审计证据&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;AuditEvent&lt;br&gt;snapshot / result manifest hash&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p2-1">
+                    <mxGeometry x="1365" y="900" width="230" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-user-auth" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p2-1" source="p2-user" target="p2-auth">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-excel-import" value="multipart XLSX" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p2-1" source="p2-input-excel" target="p2-api-import">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-apiimport-svc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" edge="1" parent="p2-1" source="p2-api-import" target="p2-svc-import">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-products-snapshot" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" edge="1" parent="p2-1" source="p2-api-products" target="p2-svc-snapshot">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-calcs-calc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" edge="1" parent="p2-1" source="p2-api-calcs" target="p2-svc-calc">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-approval-svc" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" edge="1" parent="p2-1" source="p2-api-approval" target="p2-svc-approval">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-calc-export" value="读取 Approved 结果" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;fontSize=10;" edge="1" parent="p2-1" source="p2-api-calcs" target="p2-svc-export">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-export-output" value="下载" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p2-1" source="p2-svc-export" target="p2-output">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-import-store" value="原文件" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontSize=10;" edge="1" parent="p2-1" source="p2-svc-import" target="p2-object-store">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-import-orm" value="主数据/版本" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontSize=10;" edge="1" parent="p2-1" source="p2-svc-import" target="p2-orm">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-snapshot-orm" value="冻结 payload + hash" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontSize=10;" edge="1" parent="p2-1" source="p2-svc-snapshot" target="p2-orm">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-orm-db" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p2-1" source="p2-orm" target="p2-rel-db">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-calc-celery" value="创建任务" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-svc-calc" target="p2-celery">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-celery-selector" value="执行" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-celery" target="p2-selector">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-selector-mock" value="mock" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-selector" target="p2-mock">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-selector-olca" value="rest" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-selector" target="p2-openlca-engine">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-olca-gdt" value="HTTP REST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-openlca-engine" target="p2-gdt-external">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-mock-result" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-mock" target="p2-engine-result">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-olca-result" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-openlca-engine" target="p2-engine-result">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-result-calc" value="回写结果" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p2-1" source="p2-engine-result" target="p2-svc-calc">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-calc-store" value="raw JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontSize=10;" edge="1" parent="p2-1" source="p2-svc-calc" target="p2-object-store">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-approval-db" value="状态 / 审核人" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontSize=10;" edge="1" parent="p2-1" source="p2-svc-approval" target="p2-rel-db">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-e-audit-store" value="事件 + hash" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;fontSize=10;" edge="1" parent="p2-1" source="p2-svc-audit" target="p2-audit-store">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p2-flow-label" value="主流程：导入 → 门禁 → 冻结快照 → 幂等计算 → 提交/四眼审批 → Approved 导出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;fontStyle=1;fontSize=13;" vertex="1" parent="p2-1">
+                    <mxGeometry x="220" y="1090" width="1550" height="50" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="page-deployment-flow" name="3-部署与计算数据流">
+        <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1200" math="0" shadow="0">
+            <root>
+                <mxCell id="p3-0"/>
+                <mxCell id="p3-1" parent="p3-0"/>
+                <mxCell id="p3-title" value="PCF Platform 技术架构 — 部署形态与计算数据流" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=26;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="p3-1">
+                    <mxGeometry x="40" y="25" width="1100" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-prod-boundary" value="生产 / 集成部署（Docker Compose 与独立 openLCA 服务）" style="swimlane;html=1;rounded=1;startSize=36;horizontal=1;fillColor=#F9FAFB;strokeColor=#4B5563;fontColor=#1F2937;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="40" y="90" width="1920" height="650" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-client" value="业务前端 / 帆软 / API 客户端" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="80" y="180" width="190" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-oidc" value="OIDC Provider&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;JWT / JWKS&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="80" y="300" width="190" height="75" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-api" value="FastAPI API 容器&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Uvicorn :8000&lt;br&gt;Alembic migration&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="350" y="170" width="210" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-worker" value="Celery Worker 容器&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;concurrency=1&lt;br&gt;真实计算执行者&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="350" y="390" width="210" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-postgres" value="PostgreSQL 16&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;主数据 / 快照 / 运行 / 结果 / 审计&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="660" y="150" width="220" height="125" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-redis" value="Redis 7&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;Celery Broker / Result Backend&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="660" y="330" width="220" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-minio" value="MinIO / S3&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;源 Excel / 原始结果 JSON&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="660" y="500" width="220" height="115" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-gdt" value="gdt-server 容器&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;REST :8080&lt;br&gt;-db &lt;name&gt; --readonly&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1010" y="385" width="230" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-workspace" value="只读 openLCA 工作区&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;databases / libraries&lt;br&gt;版本化发布目录&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1350" y="370" width="240" height="135" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-expert" value="LCA 专家电脑" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1010" y="170" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-desktop" value="openLCA Desktop&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;模型编辑 / 独立基准&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1280" y="160" width="200" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-release" value="模型发布制品&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;.zolca / workspace&lt;br&gt;manifest / baseline&lt;/font&gt;" style="shape=folder;tabWidth=45;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1580" y="150" width="220" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-security-note" value="生产控制：API 用户经 OIDC；openLCA REST 仅对 Worker 网络开放；生产工作区只读；模型按版本发布并可回滚。" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#FEF3C7;strokeColor=#D97706;fontColor=#78350F;fontSize=11;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1010" y="570" width="790" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-client-api" value="HTTP/REST :8000" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p3-1" source="p3-client" target="p3-api">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-oidc-api" value="JWT / JWKS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p3-1" source="p3-oidc" target="p3-api">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-api-db" value="SQL / psycopg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-api" target="p3-postgres">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-api-redis" value="Celery enqueue" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-api" target="p3-redis">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-redis-worker" value="Celery consume" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-redis" target="p3-worker">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-worker-db" value="读取快照 / 写结果" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-worker" target="p3-postgres">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-api-minio" value="S3: 源文件" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-api" target="p3-minio">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-worker-minio" value="S3: 原始结果" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-worker" target="p3-minio">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-worker-gdt" value="openLCA REST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p3-1" source="p3-worker" target="p3-gdt">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-gdt-workspace" value="只读文件挂载" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-gdt" target="p3-workspace">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-expert-desktop" value="人工建模" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p3-1" source="p3-expert" target="p3-desktop">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-desktop-release" value="审核后导出" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p3-1" source="p3-desktop" target="p3-release">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-release-workspace" value="离线恢复 / 发布" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;strokeColor=#6B7280;dashed=1;dashPattern=6 4;" edge="1" parent="p3-1" source="p3-release" target="p3-workspace">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-local-boundary" value="本地开发替代方案（无需 PostgreSQL / Redis / MinIO / 真实 openLCA）" style="swimlane;html=1;rounded=1;startSize=36;horizontal=1;fillColor=#EFF6FF;strokeColor=#2563EB;fontColor=#1D4ED8;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="40" y="790" width="1920" height="320" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-dev" value="开发者 / pytest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE9FE;strokeColor=#8B5CF6;fontColor=#4C1D95;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="100" y="890" width="180" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-local-api" value="本地 FastAPI&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;uvicorn --reload&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="390" y="875" width="200" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-sqlite" value="SQLite&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;pcf.db / test-pcf.db&lt;/font&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="700" y="850" width="190" height="105" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-local-objects" value="本地对象目录&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;./data/objects&lt;/font&gt;" style="shape=folder;tabWidth=45;tabHeight=18;tabPosition=left;html=1;whiteSpace=wrap;fillColor=#DCFCE7;strokeColor=#16A34A;fontColor=#14532D;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="700" y="985" width="190" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-eager" value="Celery eager&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;API 进程内同步执行&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#2563EB;fontColor=#1E3A8A;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1010" y="875" width="210" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-local-mock" value="Mock 引擎&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;确定性测试结果&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1340" y="875" width="200" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-local-real" value="可选：本机 gdt-server&lt;br&gt;&lt;font style=&quot;font-size:10px&quot;&gt;127.0.0.1:8080&lt;br&gt;真实集成测试&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEDD5;strokeColor=#EA580C;fontColor=#7C2D12;fontStyle=1;dashed=1;" vertex="1" parent="p3-1">
+                    <mxGeometry x="1640" y="875" width="220" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-local-config" value="配置切换：DATABASE_URL=sqlite　CELERY_TASK_ALWAYS_EAGER=true　OBJECT_STORAGE_BACKEND=local　OPENLCA_ENGINE=mock/rest" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontColor=#374151;fontSize=11;" vertex="1" parent="p3-1">
+                    <mxGeometry x="390" y="1010" width="1150" height="55" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-dev-localapi" value="HTTP / TestClient" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#8B5CF6;" edge="1" parent="p3-1" source="p3-dev" target="p3-local-api">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-localapi-sqlite" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-local-api" target="p3-sqlite">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-localapi-objects" value="文件 I/O" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#16A34A;" edge="1" parent="p3-1" source="p3-local-api" target="p3-local-objects">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-localapi-eager" value="同步 task" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#2563EB;" edge="1" parent="p3-1" source="p3-local-api" target="p3-eager">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-eager-mock" value="默认" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeColor=#EA580C;" edge="1" parent="p3-1" source="p3-eager" target="p3-local-mock">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-e-eager-real" value="rest 集成测试" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=0;strokeColor=#6B7280;dashed=1;dashPattern=6 4;" edge="1" parent="p3-1" source="p3-eager" target="p3-local-real">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="p3-legend" value="连接协议：HTTP/REST　Celery/Redis　SQL　S3　只读文件挂载　|　灰色虚线表示离线发布或可选路径" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F9FAFB;strokeColor=#9CA3AF;fontColor=#374151;fontSize=12;align=left;spacingLeft=12;" vertex="1" parent="p3-1">
+                    <mxGeometry x="40" y="1130" width="1920" height="45" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

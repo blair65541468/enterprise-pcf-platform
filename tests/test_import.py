@@ -1,8 +1,10 @@
-from io import BytesIO
 from datetime import datetime
+from io import BytesIO
 
 from openpyxl import Workbook
+from sqlalchemy import select
 
+from app.models import ImportJob, ImportStatus
 from tests.conftest import auth
 
 
@@ -85,3 +87,29 @@ def test_excel_import_serializes_datetime_payload(client):
 
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "validated"
+
+
+def test_failed_import_job_is_persisted(client, db):
+    invalid_factor = workbook_bytes(
+        ["Material Code", "Name (CN/EN)"],
+        [["RM-001", "Missing required factor columns"]],
+    )
+    response = client.post(
+        "/v1/imports/excel",
+        files=[
+            (
+                "files",
+                (
+                    "01_原材料碳因子库.xlsx",
+                    invalid_factor,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                ),
+            )
+        ],
+        headers=auth("owner", "data_submitter"),
+    )
+    assert response.status_code == 422
+    db.expire_all()
+    job = db.scalar(select(ImportJob))
+    assert job.status == ImportStatus.failed
+    assert "Required column not found" in job.summary["error"]

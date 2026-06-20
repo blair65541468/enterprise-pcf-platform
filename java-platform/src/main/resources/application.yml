@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: pcf-platform-java
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/pcf}
+    username: ${DATABASE_USER:pcf}
+    password: ${DATABASE_PASSWORD:pcf}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    baseline-on-migrate: false
+    validate-migration-naming: true
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    default-property-inclusion: non_null
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:pcf}
+    password: ${RABBITMQ_PASSWORD:pcf}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER:}
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  metrics:
+    tags:
+      application: pcf-platform-java
+
+pcf:
+  role: ${PCF_ROLE:api}
+  local-auth-enabled: ${LOCAL_AUTH_ENABLED:true}
+  openlca:
+    engine: ${OPENLCA_ENGINE:mock}
+    url: ${OPENLCA_URL:http://localhost:8081}
+    api-token: ${OPENLCA_API_TOKEN:}
+    timeout: ${OPENLCA_TIMEOUT_SECONDS:600s}
+  storage:
+    endpoint: ${S3_ENDPOINT_URL:http://localhost:9000}
+    access-key: ${S3_ACCESS_KEY:pcfadmin}
+    secret-key: ${S3_SECRET_KEY:change-me}
+    bucket: ${S3_BUCKET:pcf-artifacts}
+    region: ${S3_REGION:us-east-1}
+  calculation:
+    stale-after: ${CALCULATION_STALE_SECONDS:900s}
+    max-attempts: ${CALCULATION_MAX_ATTEMPTS:3}
+  app-version: ${APP_VERSION:0.1.0}
+  git-commit: ${GIT_COMMIT:uncommitted}
+
+springdoc:
+  api-docs:
+    path: /openapi.json
+  swagger-ui:
+    path: /docs

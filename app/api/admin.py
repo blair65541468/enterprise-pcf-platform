@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.audit import record_audit
@@ -18,7 +18,12 @@ from app.models import (
     ProductVersion,
     TransportActivity,
 )
-from app.schemas import FactorApproval, MappingCreate, ModelTemplateCreate, TransportCreate
+from app.modules.catalog.schemas import (
+    FactorApproval,
+    MappingCreate,
+    ModelTemplateCreate,
+    TransportCreate,
+)
 from app.utils import hash_payload
 
 router = APIRouter(prefix="/v1/admin", tags=["admin"])
@@ -75,7 +80,7 @@ def approve_factor(
             }
         ),
     )
-    db.commit()
+    db.flush()
     return {"factor_code": factor_code, "version": version.version, "approved": True}
 
 
@@ -110,7 +115,7 @@ def create_material_mapping(
         object_id=mapping.id,
         details=request.model_dump(mode="json"),
     )
-    db.commit()
+    db.flush()
     return {"id": mapping.id, "status": mapping.status.value}
 
 
@@ -157,7 +162,7 @@ def create_transport(
         object_id=activity.id,
         details=request.model_dump(mode="json"),
     )
-    db.commit()
+    db.flush()
     return {"id": activity.id, "approved": True}
 
 
@@ -184,7 +189,7 @@ def approve_route(
         object_id=route.id,
         details={"sku": sku, "version": route_version},
     )
-    db.commit()
+    db.flush()
     return {"id": route.id, "approved": True}
 
 
@@ -229,5 +234,5 @@ def create_model_template(
         object_id=version.id,
         details=request.model_dump(mode="json"),
     )
-    db.commit()
+    db.flush()
     return {"id": version.id, "version": version.version, "approved": True}

@@ -6,9 +6,13 @@ from typing import Any
 import httpx
 import olca_ipc.rest as rest
 import olca_schema as o
+import requests
 
 from app.config import settings
+from app.core.exceptions import ExternalServiceError
+from app.core.metrics import OPENLCA_ERRORS
 from app.engines.base import EngineContribution, EngineResult
+from app.modules.calculations.contracts import CalculationInput, ModelTemplateConfig
 
 
 class OpenLcaRestEngine:
@@ -24,12 +28,25 @@ class OpenLcaRestEngine:
 
     def _version(self) -> str:
         headers = {"X-API-TOKEN": settings.openlca_api_token} if settings.openlca_api_token else None
-        response = httpx.get(
-            f"{settings.openlca_url.rstrip('/')}/api/version",
-            headers=headers,
-            timeout=20,
-        )
-        response.raise_for_status()
+        try:
+            response = httpx.get(
+                f"{settings.openlca_url.rstrip('/')}/api/version",
+                headers=headers,
+                timeout=20,
+            )
+            response.raise_for_status()
+        except httpx.TimeoutException as exc:
+            OPENLCA_ERRORS.labels("timeout").inc()
+            raise ExternalServiceError(
+                f"openLCA version request timed out: {exc}",
+                code="OPENLCA_TIMEOUT",
+            ) from exc
+        except httpx.TransportError as exc:
+            OPENLCA_ERRORS.labels("unreachable").inc()
+            raise ExternalServiceError(
+                f"openLCA service is unreachable: {exc}",
+                code="OPENLCA_UNREACHABLE",
+            ) from exc
         data = response.json()
         return str(data.get("version") if isinstance(data, dict) else data)
 
@@ -38,23 +55,53 @@ class OpenLcaRestEngine:
 
     def calculate(
         self,
-        snapshot: dict[str, Any],
-        template: dict[str, Any],
-        impact_method: str,
+        calculation_input: CalculationInput,
+        template: ModelTemplateConfig,
+    ) -> EngineResult:
+        try:
+            return self._calculate(calculation_input, template)
+        except ExternalServiceError:
+            raise
+        except (httpx.TimeoutException, requests.Timeout, TimeoutError) as exc:
+            OPENLCA_ERRORS.labels("timeout").inc()
+            raise ExternalServiceError(
+                f"openLCA request timed out: {exc}",
+                code="OPENLCA_TIMEOUT",
+            ) from exc
+        except (httpx.TransportError, requests.ConnectionError) as exc:
+            OPENLCA_ERRORS.labels("unreachable").inc()
+            raise ExternalServiceError(
+                f"openLCA service is unreachable: {exc}",
+                code="OPENLCA_UNREACHABLE",
+            ) from exc
+
+    def _calculate(
+        self,
+        calculation_input: CalculationInput,
+        template: ModelTemplateConfig,
     ) -> EngineResult:
         client = self._client()
-        product_system_uuid = template["product_system_uuid"]
-        impact_method_uuid = template["impact_method_uuid"]
+        snapshot = calculation_input.snapshot.model_dump(mode="json")
+        product_system_uuid = template.product_system_uuid
+        impact_method_uuid = template.impact_method_uuid
         product_system = client.get_descriptor(o.ProductSystem, product_system_uuid)
         method = client.get_descriptor(o.ImpactMethod, impact_method_uuid)
         if product_system is None:
-            raise RuntimeError(f"openLCA ProductSystem not found: {product_system_uuid}")
+            OPENLCA_ERRORS.labels("model_missing").inc()
+            raise ExternalServiceError(
+                f"openLCA ProductSystem not found: {product_system_uuid}",
+                code="OPENLCA_PRODUCT_SYSTEM_NOT_FOUND",
+            )
         if method is None:
-            raise RuntimeError(f"openLCA ImpactMethod not found: {impact_method_uuid}")
+            OPENLCA_ERRORS.labels("model_missing").inc()
+            raise ExternalServiceError(
+                f"openLCA ImpactMethod not found: {impact_method_uuid}",
+                code="OPENLCA_IMPACT_METHOD_NOT_FOUND",
+            )
 
         redefs = []
         parameters = snapshot.get("openlca_parameters", {})
-        contexts = template.get("parameter_contexts", {})
+        contexts = template.parameter_contexts
         for name, value in parameters.items():
             context = contexts.get(name)
             redefs.append(
@@ -75,7 +122,11 @@ class OpenLcaRestEngine:
         try:
             state = result.wait_until_ready()
             if getattr(state, "error", None):
-                raise RuntimeError(f"openLCA calculation failed: {state.error}")
+                OPENLCA_ERRORS.labels("calculation").inc()
+                raise ExternalServiceError(
+                    f"openLCA calculation failed: {state.error}",
+                    code="OPENLCA_CALCULATION_FAILED",
+                )
             impacts = result.get_total_impacts()
             impact_map = {
                 item.impact_category.name: Decimal(str(item.amount))
@@ -116,7 +167,7 @@ class OpenLcaRestEngine:
                     )
             stage_groups = {
                 stage: set(process_ids)
-                for stage, process_ids in template.get("stage_process_uuids", {}).items()
+                for stage, process_ids in template.stage_process_uuids.items()
             }
             if stage_groups:
                 stages = {

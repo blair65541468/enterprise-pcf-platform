@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from pathlib import Path
 from types import SimpleNamespace
 
 import olca_schema as o
 import pytest
 
 from scripts.openlca_inspect import (
-    ConnectionConfig,
     build_case_template,
     calculate_impacts,
     descriptor_rows,

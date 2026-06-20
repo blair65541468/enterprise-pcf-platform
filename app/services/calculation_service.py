@@ -1,14 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+import time
+import uuid
 from decimal import Decimal
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session, selectinload
 
 from app.audit import record_audit
 from app.config import settings
+from app.core.clock import Clock, SystemClock
+from app.core.exceptions import ConflictError
+from app.core.metrics import CALCULATION_DURATION
 from app.engines import get_calculation_engine
+from app.engines.base import CalculationEngine
 from app.models import (
     CalculationRun,
     CalculationSnapshot,
@@ -18,13 +23,26 @@ from app.models import (
     ResultContribution,
     ResultSummary,
 )
-from app.storage import get_storage
-from app.utils import canonical_json, hash_payload
+from app.modules.calculations.contracts import CalculationInput, ModelTemplateConfig
+from app.modules.snapshots.contracts import SnapshotPayload
+from app.services.outbox_service import OutboxService
+from app.storage import ObjectStorage, get_storage
+from app.utils import canonical_json, hash_payload, sha256_bytes
 
 
 class CalculationService:
-    def __init__(self, db: Session):
+    def __init__(
+        self,
+        db: Session,
+        *,
+        engine: CalculationEngine | None = None,
+        storage: ObjectStorage | None = None,
+        clock: Clock | None = None,
+    ):
         self.db = db
+        self.engine = engine or get_calculation_engine()
+        self.storage = storage or get_storage()
+        self.clock = clock or SystemClock()
 
     def create_run(
         self,
@@ -33,12 +51,21 @@ class CalculationService:
         template_version: str,
         impact_method: str,
         idempotency_key: str,
+        request_hash: str,
         actor: str,
+        request_id: str | None = None,
     ) -> tuple[CalculationRun, bool]:
         existing = self.db.scalar(
             select(CalculationRun).where(CalculationRun.idempotency_key == idempotency_key)
         )
         if existing:
+            if existing.request_hash and existing.request_hash != request_hash:
+                raise ConflictError(
+                    "Idempotency key was already used for a different calculation request",
+                    code="IDEMPOTENCY_KEY_REUSED",
+                )
+            if not existing.request_hash:
+                existing.request_hash = request_hash
             return existing, False
         template = self.db.scalar(
             select(ModelTemplateVersion)
@@ -51,8 +78,10 @@ class CalculationService:
             raise ValueError(f"Model template version is not approved: {template_version}")
         run = CalculationRun(
             snapshot_id=snapshot.id,
+            product_id=snapshot.product_id,
             model_template_version_id=template.id,
             idempotency_key=idempotency_key,
+            request_hash=request_hash,
             status=CalculationStatus.queued,
             impact_method=impact_method,
             requested_by=actor,
@@ -68,9 +97,46 @@ class CalculationService:
             object_id=run.id,
             details={"snapshot_id": snapshot.id, "idempotency_key": idempotency_key},
         )
-        self.db.commit()
-        self.db.refresh(run)
+        OutboxService(self.db).enqueue_calculation(run.id, request_id)
         return run, True
+
+    def claim_run(self, run_id: str) -> str | None:
+        token = str(uuid.uuid4())
+        now = self.clock.now()
+        result = self.db.execute(
+            update(CalculationRun)
+            .where(
+                CalculationRun.id == run_id,
+                CalculationRun.status == CalculationStatus.queued,
+            )
+            .values(
+                status=CalculationStatus.calculating,
+                execution_token=token,
+                attempt_count=CalculationRun.attempt_count + 1,
+                heartbeat_at=now,
+                started_at=now,
+                completed_at=None,
+                error=None,
+            )
+        )
+        return token if result.rowcount == 1 else None
+
+    def mark_failed(self, run_id: str, error: Exception, *, retry: bool) -> None:
+        run = self.db.get(CalculationRun, run_id)
+        if not run:
+            return
+        run.status = CalculationStatus.queued if retry else CalculationStatus.failed
+        run.execution_token = None
+        run.error = str(error)[:4000]
+        run.completed_at = None if retry else self.clock.now()
+        record_audit(
+            self.db,
+            actor="pcf-worker",
+            action="calculation.retry_scheduled" if retry else "calculation.failed",
+            object_type="calculation_run",
+            object_id=run.id,
+            details={"error": str(error), "attempt_count": run.attempt_count},
+        )
 
     def execute(self, run_id: str) -> CalculationRun:
         run = self.db.scalar(
@@ -89,23 +155,24 @@ class CalculationService:
             return run
         snapshot = self.db.get(CalculationSnapshot, run.snapshot_id)
         template = self.db.get(ModelTemplateVersion, run.model_template_version_id)
-        engine = get_calculation_engine()
-        run.status = CalculationStatus.calculating
-        run.started_at = datetime.now(timezone.utc)
-        run.error = None
-        self.db.commit()
+        engine = self.engine
+        started = time.perf_counter()
         try:
             result = engine.calculate(
-                snapshot.payload,
-                {
-                    "product_system_uuid": template.product_system_uuid,
-                    "impact_method_uuid": template.impact_method_uuid,
-                    "database_version": template.database_version,
-                    "parameter_schema": template.parameter_schema,
-                    "parameter_contexts": template.parameter_schema.get("contexts", {}),
-                    "stage_process_uuids": template.parameter_schema.get("stage_process_uuids", {}),
-                },
-                run.impact_method,
+                CalculationInput(
+                    snapshot=SnapshotPayload.load_compatible(snapshot.payload),
+                    impact_method=run.impact_method,
+                ),
+                ModelTemplateConfig(
+                    product_system_uuid=template.product_system_uuid,
+                    impact_method_uuid=template.impact_method_uuid,
+                    database_version=template.database_version,
+                    parameter_schema=template.parameter_schema,
+                    parameter_contexts=template.parameter_schema.get("contexts", {}),
+                    stage_process_uuids=template.parameter_schema.get(
+                        "stage_process_uuids", {}
+                    ),
+                ),
             )
             self._assert_result_consistency(result)
             raw = {
@@ -127,7 +194,10 @@ class CalculationService:
                 "raw": result.raw,
             }
             raw_key = f"calculations/{run.id}/openlca-result.json"
-            get_storage().put(raw_key, canonical_json(raw), "application/json")
+            raw_bytes = canonical_json(raw)
+            self.storage.put(raw_key, raw_bytes, "application/json")
+            if sha256_bytes(self.storage.get(raw_key)) != sha256_bytes(raw_bytes):
+                raise RuntimeError("Stored openLCA result failed SHA-256 verification")
             self.db.execute(delete(ResultContribution).where(ResultContribution.run_id == run.id))
             if run.summary:
                 self.db.delete(run.summary)
@@ -181,7 +251,9 @@ class CalculationService:
             run.engine = engine.name
             run.engine_version = result.engine_version
             run.raw_result_object_key = raw_key
-            run.completed_at = datetime.now(timezone.utc)
+            run.completed_at = self.clock.now()
+            run.heartbeat_at = run.completed_at
+            run.execution_token = None
             run.manifest_hash = hash_payload(manifest)
             record_audit(
                 self.db,
@@ -192,25 +264,19 @@ class CalculationService:
                 after_hash=run.manifest_hash,
                 details=manifest,
             )
-            self.db.commit()
+            CALCULATION_DURATION.labels(engine.name, "success").observe(
+                time.perf_counter() - started
+            )
+            self.db.flush()
             return self.db.scalar(
                 select(CalculationRun)
                 .options(selectinload(CalculationRun.summary), selectinload(CalculationRun.contributions))
                 .where(CalculationRun.id == run.id)
             )
-        except Exception as exc:
-            run.status = CalculationStatus.failed
-            run.error = str(exc)
-            run.completed_at = datetime.now(timezone.utc)
-            record_audit(
-                self.db,
-                actor="pcf-worker",
-                action="calculation.failed",
-                object_type="calculation_run",
-                object_id=run.id,
-                details={"error": str(exc)},
+        except Exception:
+            CALCULATION_DURATION.labels(engine.name, "error").observe(
+                time.perf_counter() - started
             )
-            self.db.commit()
             raise
 
     @staticmethod

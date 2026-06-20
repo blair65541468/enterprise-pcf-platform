@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16.9-alpine
     environment:
       POSTGRES_DB: pcf
       POSTGRES_USER: pcf
@@ -12,34 +12,61 @@ services:
       retries: 20
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks: [pcf-internal]
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.5-alpine
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
       retries: 20
+    restart: unless-stopped
+    networks: [pcf-internal]
+
+  rabbitmq:
+    image: rabbitmq:4.1.1-management-alpine
+    profiles: [java]
+    environment:
+      RABBITMQ_DEFAULT_USER: pcf
+      RABBITMQ_DEFAULT_PASS: pcf
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks: [pcf-internal]
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: pcfadmin
       MINIO_ROOT_PASSWORD: change-me
     ports:
-      - "9001:9001"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
     volumes:
       - minio-data:/data
+    restart: unless-stopped
+    networks: [pcf-internal]
+
+  migrate:
+    build: .
+    env_file: ${PCF_ENV_FILE:-.env.example}
+    command: alembic upgrade head
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [pcf-internal]
 
   api:
     build: .
     env_file: ${PCF_ENV_FILE:-.env.example}
-    command: >
-      sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
     ports:
-      - "8000:8000"
+      - "${PCF_API_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -47,8 +74,23 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      migrate:
+        condition: service_completed_successfully
     volumes:
       - ../:/workspace:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=3)",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks: [pcf-internal]
 
   worker:
     build: .
@@ -61,9 +103,120 @@ services:
         condition: service_healthy
       minio:
         condition: service_started
+      migrate:
+        condition: service_completed_successfully
     volumes:
       - ../:/workspace:ro
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A app.celery_app.celery inspect ping -d celery@$$HOSTNAME"]
+      interval: 20s
+      timeout: 10s
+      retries: 6
+    restart: unless-stopped
+    networks: [pcf-internal]
+
+  beat:
+    build: .
+    env_file: ${PCF_ENV_FILE:-.env.example}
+    command: >
+      celery -A app.celery_app.celery beat
+      --loglevel=INFO
+      --pidfile=/tmp/pcf-celerybeat.pid
+      --schedule=/tmp/pcf-celerybeat-schedule
+    depends_on:
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "test -s /tmp/pcf-celerybeat.pid && kill -0 $$(cat /tmp/pcf-celerybeat.pid)",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+    networks: [pcf-internal]
+
+  java-migrate:
+    image: flyway/flyway:11.8-alpine
+    profiles: [java]
+    command:
+      - -url=jdbc:postgresql://postgres:5432/pcf
+      - -user=pcf
+      - -password=pcf
+      - -baselineOnMigrate=false
+      - migrate
+    volumes:
+      - ./java-platform/src/main/resources/db/migration:/flyway/sql:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [pcf-internal]
+
+  java-api:
+    build: ./java-platform
+    profiles: [java]
+    env_file: ${PCF_JAVA_ENV_FILE:-java-platform/.env.example}
+    environment:
+      PCF_ROLE: api
+    ports:
+      - "${PCF_JAVA_API_PORT:-8080}:8080"
+    depends_on:
+      java-migrate:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1:8080/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    networks: [pcf-internal]
+
+  java-worker:
+    build: ./java-platform
+    profiles: [java]
+    env_file: ${PCF_JAVA_ENV_FILE:-java-platform/.env.example}
+    environment:
+      PCF_ROLE: worker
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+    depends_on:
+      java-migrate:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: unless-stopped
+    networks: [pcf-internal]
+
+  java-scheduler:
+    build: ./java-platform
+    profiles: [java]
+    env_file: ${PCF_JAVA_ENV_FILE:-java-platform/.env.example}
+    environment:
+      PCF_ROLE: scheduler
+      SPRING_MAIN_WEB_APPLICATION_TYPE: none
+    depends_on:
+      java-migrate:
+        condition: service_completed_successfully
+      rabbitmq:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    restart: unless-stopped
+    networks: [pcf-internal]
 
 volumes:
   postgres-data:
   minio-data:
+
+networks:
+  pcf-internal:
+    driver: bridge

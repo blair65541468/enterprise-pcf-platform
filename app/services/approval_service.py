@@ -1,22 +1,22 @@
-from datetime import datetime, timezone
-
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.audit import record_audit
-from app.models import CalculationRun, CalculationSnapshot, CalculationStatus
+from app.core.clock import Clock, SystemClock
+from app.models import CalculationRun, CalculationStatus, Product
 
 
 class ApprovalService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, *, clock: Clock | None = None):
         self.db = db
+        self.clock = clock or SystemClock()
 
     def submit(self, run: CalculationRun, actor: str) -> CalculationRun:
         if run.status != CalculationStatus.calculated:
             raise ValueError("Only calculated runs can be submitted")
         run.status = CalculationStatus.submitted
         run.submitted_by = actor
-        run.submitted_at = datetime.now(timezone.utc)
+        run.submitted_at = self.clock.now()
         record_audit(
             self.db,
             actor=actor,
@@ -26,8 +26,7 @@ class ApprovalService:
             before_hash=run.manifest_hash,
             after_hash=run.manifest_hash,
         )
-        self.db.commit()
-        self.db.refresh(run)
+        self.db.flush()
         return run
 
     def approve(self, run: CalculationRun, actor: str) -> CalculationRun:
@@ -35,17 +34,18 @@ class ApprovalService:
             raise ValueError("Only submitted runs can be approved")
         if actor == run.submitted_by:
             raise ValueError("Four-eyes rule: submitter cannot approve the same run")
-        snapshot = self.db.get(CalculationSnapshot, run.snapshot_id)
-        product_id = snapshot.product_id
+        self.db.scalar(
+            select(Product).where(Product.id == run.product_id).with_for_update()
+        )
         approved_runs = list(
             self.db.scalars(
                 select(CalculationRun)
-                .join(CalculationSnapshot)
                 .where(
-                    CalculationSnapshot.product_id == product_id,
+                    CalculationRun.product_id == run.product_id,
                     CalculationRun.status == CalculationStatus.approved,
                     CalculationRun.id != run.id,
                 )
+                .with_for_update()
             )
         )
         approved_ids = [item.id for item in approved_runs]
@@ -61,9 +61,10 @@ class ApprovalService:
                 after_hash=previous.manifest_hash,
                 details={"replacement_run_id": run.id},
             )
+        self.db.flush()
         run.status = CalculationStatus.approved
         run.approved_by = actor
-        run.approved_at = datetime.now(timezone.utc)
+        run.approved_at = self.clock.now()
         record_audit(
             self.db,
             actor=actor,
@@ -74,8 +75,7 @@ class ApprovalService:
             after_hash=run.manifest_hash,
             details={"superseded_run_ids": approved_ids},
         )
-        self.db.commit()
-        self.db.refresh(run)
+        self.db.flush()
         return run
 
     def reject(self, run: CalculationRun, actor: str, reason: str) -> CalculationRun:
@@ -94,6 +94,5 @@ class ApprovalService:
             object_id=run.id,
             details={"reason": reason},
         )
-        self.db.commit()
-        self.db.refresh(run)
+        self.db.flush()
         return run

@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
 
-os.environ["DATABASE_URL"] = "sqlite:///./test-pcf.db"
-os.environ["CELERY_TASK_ALWAYS_EAGER"] = "true"
-os.environ["OBJECT_STORAGE_BACKEND"] = "local"
-os.environ["OBJECT_STORAGE_LOCAL_DIR"] = "./test-objects"
-os.environ["OPENLCA_ENGINE"] = "mock"
-os.environ["LOCAL_AUTH_ENABLED"] = "true"
+os.environ.setdefault("DATABASE_URL", "sqlite:///./test-pcf.db")
+os.environ.setdefault("CELERY_TASK_ALWAYS_EAGER", "true")
+os.environ.setdefault("OBJECT_STORAGE_BACKEND", "local")
+os.environ.setdefault("OBJECT_STORAGE_LOCAL_DIR", "./test-objects")
+os.environ.setdefault("OPENLCA_ENGINE", "mock")
+os.environ.setdefault("LOCAL_AUTH_ENABLED", "true")
 
 import pytest
 
@@ -18,22 +18,39 @@ def pytest_addoption(parser):
         default=False,
         help="run integration tests against a configured real openLCA REST service",
     )
+    parser.addoption(
+        "--run-infrastructure",
+        action="store_true",
+        default=False,
+        help="run integration tests against PostgreSQL, Redis, and object storage",
+    )
 
 
 def pytest_collection_modifyitems(config, items):
-    if config.getoption("--run-openlca"):
-        return
-    skip_openlca = pytest.mark.skip(
-        reason="real openLCA integration tests require --run-openlca"
-    )
     for item in items:
-        if "openlca_integration" in item.keywords:
+        if (
+            "openlca_integration" in item.keywords
+            and not config.getoption("--run-openlca")
+        ):
+            skip_openlca = pytest.mark.skip(
+                reason="real openLCA integration tests require --run-openlca"
+            )
             item.add_marker(skip_openlca)
+        if (
+            "infrastructure" in item.keywords
+            and not config.getoption("--run-infrastructure")
+        ):
+            skip_infrastructure = pytest.mark.skip(
+                reason="infrastructure tests require --run-infrastructure"
+            )
+            item.add_marker(skip_infrastructure)
 
 
 @pytest.fixture(autouse=True)
 def clean_database(request):
-    if request.node.get_closest_marker("openlca_integration"):
+    if request.node.get_closest_marker(
+        "openlca_integration"
+    ) or request.node.get_closest_marker("infrastructure"):
         yield
         return
 

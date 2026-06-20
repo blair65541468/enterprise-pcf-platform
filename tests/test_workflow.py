@@ -138,3 +138,44 @@ def test_calculation_rejects_route_version_different_from_snapshot(client, db):
         headers=auth("owner", "data_submitter"),
     )
     assert response.status_code == 409
+
+
+def test_new_approval_supersedes_previous_approved_run(client, db):
+    seed_valid_pilot(db)
+    snapshot = client.post(
+        "/v1/products/INT-WD-001/snapshots",
+        json={},
+        headers=auth("owner", "data_submitter"),
+    ).json()
+
+    def calculate_and_approve(key):
+        run = client.post(
+            "/v1/calculations",
+            json={
+                "sku": "INT-WD-001",
+                "snapshot_version": snapshot["version"],
+                "model_template_version": "WARDROBE-GATE-V1",
+                "factor_set_version": "2026.06",
+                "route_version": "WD-ROUTE-V1",
+                "impact_method": "IPCC-2021-ISO14067-GWP100",
+                "boundary": "cradle_to_gate_with_packaging",
+                "idempotency_key": key,
+            },
+            headers=auth("owner", "data_submitter"),
+        ).json()
+        client.post(
+            f"/v1/calculations/{run['id']}/submit",
+            headers=auth("owner", "data_submitter"),
+        )
+        approved = client.post(
+            f"/v1/calculations/{run['id']}/approve",
+            headers=auth("reviewer", "lca_reviewer"),
+        )
+        assert approved.status_code == 200
+        return run["id"]
+
+    first_id = calculate_and_approve("approval-v1")
+    second_id = calculate_and_approve("approval-v2")
+
+    assert client.get(f"/v1/calculations/{first_id}").json()["status"] == "superseded"
+    assert client.get(f"/v1/calculations/{second_id}").json()["status"] == "approved"

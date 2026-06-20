@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>gdt-server REST API 中文交互手册</title>
+  <style>
+    :root {
+      --bg: #f4f7fb;
+      --panel: #fff;
+      --ink: #172033;
+      --muted: #64748b;
+      --line: #dbe3ef;
+      --brand: #175cd3;
+      --brand-soft: #eaf2ff;
+      --get: #087443;
+      --post: #175cd3;
+      --put: #a15c00;
+      --delete: #b42318;
+      --warning: #b54708;
+      --warning-bg: #fff7ed;
+      --danger-bg: #fff1f0;
+      --ok-bg: #ecfdf3;
+      --code: #101828;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font: 14px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Microsoft YaHei", Arial, sans-serif;
+    }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    code, pre { font-family: Consolas, "SFMono-Regular", monospace; }
+    .hero {
+      color: #fff;
+      background: linear-gradient(125deg, #102a56, #175cd3 58%, #0e9384);
+      padding: 42px max(24px, calc((100% - 1440px) / 2));
+    }
+    .hero h1 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 42px); }
+    .hero p { max-width: 940px; margin: 7px 0; color: #dbeafe; }
+    .hero code { color: #fff; background: #ffffff1d; padding: 2px 6px; border-radius: 5px; }
+    .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .stat {
+      min-width: 120px; padding: 12px 16px; border: 1px solid #ffffff38;
+      border-radius: 12px; background: #ffffff14; backdrop-filter: blur(4px);
+    }
+    .stat strong { display: block; font-size: 22px; }
+    .layout {
+      max-width: 1440px; margin: 0 auto; padding: 24px;
+      display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 24px;
+    }
+    aside { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow: auto; }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: 0 3px 12px #102a560c;
+    }
+    .side-panel { padding: 18px; }
+    .side-panel h2 { margin: 0 0 12px; font-size: 15px; }
+    .toc { display: grid; gap: 5px; margin: 0; padding: 0; list-style: none; }
+    .toc a { display: block; padding: 7px 9px; color: #344054; border-radius: 7px; }
+    .toc a:hover { color: var(--brand); background: var(--brand-soft); text-decoration: none; }
+    main { min-width: 0; }
+    section { scroll-margin-top: 20px; margin-bottom: 24px; }
+    .content-panel { padding: 24px; }
+    h2 { margin: 0 0 15px; font-size: 23px; }
+    h3 { margin: 22px 0 10px; }
+    .callout {
+      padding: 14px 16px; margin: 14px 0; border-radius: 10px;
+      border-left: 4px solid var(--brand); background: var(--brand-soft);
+    }
+    .callout.warning { border-color: var(--warning); background: var(--warning-bg); }
+    .callout.danger { border-color: var(--delete); background: var(--danger-bg); }
+    .flow {
+      display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin: 16px 0;
+    }
+    .flow span { padding: 8px 11px; background: #eef4ff; border: 1px solid #c7d7fe; border-radius: 8px; }
+    .flow b { color: var(--muted); }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .mini { padding: 15px; border: 1px solid var(--line); border-radius: 10px; background: #fbfdff; }
+    .mini h3 { margin: 0 0 7px; font-size: 15px; }
+    table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+    th, td { padding: 9px 10px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #f8fafc; }
+    .toolbar {
+      position: sticky; top: 0; z-index: 10; padding: 16px;
+      display: grid; gap: 12px; background: #fffffff2; backdrop-filter: blur(8px);
+      border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 5px 20px #102a5612;
+    }
+    .toolbar-row { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; }
+    input, select, button {
+      min-height: 38px; padding: 7px 10px; border: 1px solid #cbd5e1;
+      border-radius: 8px; background: #fff; color: var(--ink); font: inherit;
+    }
+    input[type="search"] { flex: 1; min-width: 240px; }
+    button { cursor: pointer; }
+    button:hover { border-color: var(--brand); color: var(--brand); }
+    .result-count { margin-left: auto; color: var(--muted); }
+    .category-title {
+      display: flex; align-items: center; gap: 10px; margin: 27px 0 12px;
+      padding-bottom: 8px; border-bottom: 2px solid #dbeafe;
+    }
+    .category-title span { color: var(--muted); font-size: 13px; font-weight: normal; }
+    .endpoint {
+      margin: 11px 0; overflow: hidden; border: 1px solid var(--line);
+      border-radius: 12px; background: #fff;
+    }
+    .endpoint.pcf { border-left: 5px solid var(--brand); }
+    .endpoint summary {
+      display: grid; grid-template-columns: 74px minmax(260px, 1.5fr) minmax(220px, 1fr) auto;
+      gap: 12px; align-items: center; padding: 14px 16px; cursor: pointer;
+      list-style: none;
+    }
+    .endpoint summary::-webkit-details-marker { display: none; }
+    .endpoint summary:hover { background: #f8fbff; }
+    .method {
+      display: inline-flex; justify-content: center; align-items: center; min-width: 66px;
+      padding: 5px 8px; border-radius: 7px; color: #fff; font-weight: 700; letter-spacing: .4px;
+    }
+    .GET { background: var(--get); } .POST { background: var(--post); }
+    .PUT { background: var(--put); } .DELETE { background: var(--delete); }
+    .path { overflow-wrap: anywhere; color: #111827; font-size: 13px; font-weight: 700; }
+    .summary-title { color: #344054; }
+    .tags { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
+    .tag {
+      display: inline-flex; padding: 3px 7px; border-radius: 999px;
+      font-size: 11px; font-weight: 600; color: #344054; background: #f2f4f7;
+    }
+    .tag.core { color: #1849a9; background: #eaf2ff; }
+    .tag.readonly { color: #b42318; background: #fee4e2; }
+    .tag.advanced { color: #6941c6; background: #f4ebff; }
+    .tag.deprecated { color: #b54708; background: #fef0c7; }
+    .tag.direct { color: #026aa2; background: #e0f2fe; }
+    .details-body { border-top: 1px solid var(--line); padding: 18px; }
+    .details-grid { display: grid; gap: 15px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+    .details-grid h4 { margin: 0 0 8px; }
+    pre {
+      position: relative; margin: 8px 0; padding: 14px; overflow: auto;
+      color: #e5e7eb; background: var(--code); border-radius: 9px; white-space: pre;
+    }
+    .copy {
+      float: right; min-height: 29px; padding: 3px 8px; color: #dbeafe;
+      border-color: #475467; background: #1d2939; font-size: 11px;
+    }
+    .copy:hover { color: #fff; border-color: #84adff; }
+    .muted { color: var(--muted); }
+    .empty { padding: 28px; text-align: center; color: var(--muted); }
+    #top-link {
+      position: fixed; right: 22px; bottom: 22px; padding: 10px 13px;
+      color: #fff; background: var(--brand); border-radius: 999px; box-shadow: 0 4px 15px #175cd355;
+    }
+    footer { max-width: 1440px; margin: 0 auto; padding: 0 24px 35px; color: var(--muted); }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      aside { position: static; max-height: none; }
+      .endpoint summary { grid-template-columns: 68px 1fr; }
+      .summary-title, .tags { grid-column: 2; justify-content: flex-start; }
+    }
+    @media print {
+      body { background: #fff; }
+      aside, .toolbar, #top-link, .copy { display: none !important; }
+      .layout { display: block; max-width: none; padding: 0; }
+      .panel, .endpoint { box-shadow: none; break-inside: avoid; }
+      .endpoint > .details-body { display: block !important; }
+      details { display: block; }
+      details > summary { list-style: none; }
+    }
+  </style>
+</head>
+<body id="top">
+  <header class="hero">
+    <h1>gdt-server REST API 中文交互手册</h1>
+    <p>依据 GreenDelta gdt-server 固定提交
+      <code>2e3a1787c13ca119761942b8855ac31407cbb4cd</code>，
+      服务版本 <strong>2.0.28</strong>。文档覆盖源码实际注册的全部 REST 路由。</p>
+    <p>默认示例地址：<code>http://127.0.0.1:8080</code>。本文用于当前 PCF Platform
+      的开发与集成查阅，不替代 GreenDelta 官方许可与协议说明。</p>
+    <div class="stats">
+      <div class="stat"><strong id="stat-total">66</strong>全部路由</div>
+      <div class="stat"><strong>51</strong>GET</div>
+      <div class="stat"><strong>11</strong>POST</div>
+      <div class="stat"><strong>3</strong>DELETE</div>
+      <div class="stat"><strong>1</strong>PUT</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <nav class="panel side-panel">
+        <h2>文档目录</h2>
+        <ul class="toc">
+          <li><a href="#overview">快速理解</a></li>
+          <li><a href="#parameters">参数速查</a></li>
+          <li><a href="#request-models">请求体模型</a></li>
+          <li><a href="#compatibility">兼容性与安全</a></li>
+          <li><a href="#api-reference">全部 API</a></li>
+          <li><a href="#sources">版本与资料来源</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main>
+      <section id="overview" class="panel content-panel">
+        <h2>快速理解</h2>
+        <div class="callout">
+          <strong>一句话解释：</strong>gdt-server 把 openLCA 数据库和计算引擎包装成 HTTP
+          接口。调用方先查到模型 UUID，再发起计算，使用返回的临时结果 ID 查询各种结果，
+          最后主动释放结果。
+        </div>
+        <div class="flow" aria-label="典型调用流程">
+          <span>1. 查 Product System / Method UUID</span><b>→</b>
+          <span>2. POST /result/calculate</span><b>→</b>
+          <span>3. GET /state</span><b>→</b>
+          <span>4. 查总量与贡献</span><b>→</b>
+          <span>5. POST /dispose</span>
+        </div>
+        <div class="grid">
+          <div class="mini"><h3>当前 PCF 项目重点使用</h3>
+            版本检查、描述符/参数查询、计算、状态、总影响、过程贡献和结果释放。
+            API 卡片左侧蓝线及“PCF 核心”标签表示该范围。</div>
+          <div class="mini"><h3>结果是临时资源</h3>
+            <code>POST /result/calculate</code> 返回的 <code>@id</code> 是结果句柄，不是永久业务 ID。
+            查询结束必须调用 dispose；本项目在 <code>finally</code> 中执行释放。</div>
+          <div class="mini"><h3>只读模式</h3>
+            当前项目用 <code>--readonly</code> 启动 gdt-server，因此 PUT、DELETE 和
+            <code>/data/create-system</code> 根本不会注册，应在 Desktop 中完成模型编辑。</div>
+        </div>
+      </section>
+
+      <section id="parameters" class="panel content-panel">
+        <h2>路径参数速查</h2>
+        <table>
+          <thead><tr><th>参数</th><th>格式</th><th>通俗说明</th></tr></thead>
+          <tbody>
+            <tr><td><code>{id}</code></td><td>UUID / 结果句柄</td>
+              <td><code>/data</code> 下表示实体 UUID；<code>/result</code> 下表示计算返回的临时结果 ID。</td></tr>
+            <tr><td><code>{type-path}</code></td><td>模型类型路径</td>
+              <td>告诉服务器要查询哪类 openLCA 对象，允许值见下表。</td></tr>
+            <tr><td><code>{tech-flow}</code></td><td><code>provider UUID::flow UUID</code></td>
+              <td>技术流唯一标识，即“哪个过程提供哪条产品流”。应先从
+                <code>/result/{id}/tech-flows</code> 返回值取得。</td></tr>
+            <tr><td><code>{envi-flow}</code></td><td><code>flow UUID</code> 或
+                <code>flow UUID::location UUID</code></td>
+              <td>环境流标识，例如某地点的 CO₂ 排放流。应先从
+                <code>/result/{id}/envi-flows</code> 取得。</td></tr>
+            <tr><td><code>{impact-category}</code></td><td>影响类别 UUID</td>
+              <td>例如 Climate change/GWP 类别 ID，应从计算结果的
+                <code>impact-categories</code> 或 <code>total-impacts</code> 取得。</td></tr>
+            <tr><td><code>&lt;name&gt;</code></td><td>URL 编码后的对象名称</td>
+              <td>按名称查对象。名称可能不唯一，自动化集成优先使用 UUID。</td></tr>
+          </tbody>
+        </table>
+        <h3><code>{type-path}</code> 允许值与别名</h3>
+        <table>
+          <thead><tr><th>对象</th><th>推荐路径</th><th>服务端接受的别名</th></tr></thead>
+          <tbody>
+            <tr><td>参与方</td><td><code>actors</code></td><td>actor</td></tr>
+            <tr><td>分类</td><td><code>categories</code></td><td>category</td></tr>
+            <tr><td>货币</td><td><code>currencies</code></td><td>currency</td></tr>
+            <tr><td>数据质量系统</td><td><code>dq-systems</code></td><td>dq-system</td></tr>
+            <tr><td>EPD</td><td><code>epds</code></td><td>epd</td></tr>
+            <tr><td>流</td><td><code>flows</code></td><td>flow</td></tr>
+            <tr><td>流属性</td><td><code>flow-properties</code></td><td>flow-property</td></tr>
+            <tr><td>影响类别</td><td><code>impact-categories</code></td><td>impact-category</td></tr>
+            <tr><td>影响评价方法</td><td><code>impact-methods</code></td><td>impact-method, method, methods</td></tr>
+            <tr><td>地点</td><td><code>locations</code></td><td>location</td></tr>
+            <tr><td>参数</td><td><code>parameters</code></td><td>parameter</td></tr>
+            <tr><td>过程</td><td><code>processes</code></td><td>process</td></tr>
+            <tr><td>产品系统</td><td><code>product-systems</code></td><td>product-system, model, models</td></tr>
+            <tr><td>项目</td><td><code>projects</code></td><td>project</td></tr>
+            <tr><td>结果模型</td><td><code>results</code></td><td>result</td></tr>
+            <tr><td>社会指标</td><td><code>social-indicators</code></td><td>social-indicator</td></tr>
+            <tr><td>来源</td><td><code>sources</code></td><td>source</td></tr>
+            <tr><td>单位组</td><td><code>unit-groups</code></td><td>unit-group</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="request-models" class="panel content-panel">
+        <h2>共享请求体模型</h2>
+        <div class="grid">
+          <div class="mini"><h3>Ref：对象引用</h3>
+            最常用字段是 <code>@id</code>、<code>@type</code>、<code>name</code>。
+            计算时 target、impactMethod、unit、context 等均使用引用。</div>
+          <div class="mini"><h3>ParameterRedef：参数重定义</h3>
+            <code>name</code> 参数名，<code>value</code> 新值，<code>context</code>
+            用于区分同名参数属于哪个过程或产品系统。</div>
+          <div class="mini"><h3>CalculationSetup：计算配置</h3>
+            必填核心是 <code>target</code>；PCF 通常还传
+            <code>impactMethod</code> 和 <code>parameters</code>。</div>
+          <div class="mini"><h3>SankeyRequest：桑基图配置</h3>
+            用 <code>impactCategory</code>、<code>enviFlow</code> 或
+            <code>forCosts</code> 选择指标，<code>maxNodes</code> 和
+            <code>minShare</code> 控制图规模。</div>
+        </div>
+        <h3>CalculationSetup 字段</h3>
+        <table>
+          <thead><tr><th>字段</th><th>类型/可选值</th><th>作用</th></tr></thead>
+          <tbody>
+            <tr><td><code>target</code></td><td>Ref</td><td>计算目标，通常是 Product System 描述符。</td></tr>
+            <tr><td><code>impactMethod</code></td><td>Ref</td><td>影响评价方法；没有它就无法查询 LCIA 影响结果。</td></tr>
+            <tr><td><code>amount</code></td><td>number</td><td>目标需求量，未设置时采用目标默认量。</td></tr>
+            <tr><td><code>unit</code></td><td>Ref</td><td>目标需求单位。</td></tr>
+            <tr><td><code>flowProperty</code></td><td>Ref</td><td>目标流属性。</td></tr>
+            <tr><td><code>parameters</code></td><td>ParameterRedef[]</td><td>覆盖模型参数值。</td></tr>
+            <tr><td><code>allocation</code></td><td>PHYSICAL_ALLOCATION / ECONOMIC_ALLOCATION /
+              CAUSAL_ALLOCATION / USE_DEFAULT_ALLOCATION / NO_ALLOCATION</td><td>多功能过程分配方式。</td></tr>
+            <tr><td><code>nwSet</code></td><td>Ref</td><td>归一化与加权集合。</td></tr>
+            <tr><td><code>withCosts</code></td><td>boolean</td><td>是否同时计算成本结果。</td></tr>
+            <tr><td><code>withRegionalization</code></td><td>boolean</td><td>是否启用区域化计算。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="compatibility" class="panel content-panel">
+        <h2>兼容性、安全与响应约定</h2>
+        <div class="callout danger"><strong>安全提醒：</strong>该固定版本没有内置用户认证，
+          并配置为允许任意 CORS 来源。生产环境不要直接暴露到公网；应限制 Worker 网络访问，
+          或在前方使用带鉴权、TLS、限流和审计的反向代理。</div>
+        <div class="callout warning"><strong>客户端/服务端差异：</strong>
+          当前 <code>olca-ipc 2.6.3</code> 中的 <code>put_source_file</code>、
+          grouped result 等方法，在该固定服务端源码中没有对应路由；不要将它们当成本服务可用 API。
+          相反，<code>/result/{id}/total-cost-values</code> 在服务端存在，但 Python 客户端没有直接封装，
+          需要直接发 HTTP 请求。<code>/results/*</code> 仅用于兼容旧版本，新代码统一使用
+          <code>/result/*</code>。</div>
+        <table>
+          <thead><tr><th>HTTP 状态</th><th>含义</th><th>处理建议</th></tr></thead>
+          <tbody>
+            <tr><td>200</td><td>成功，通常返回 JSON。</td><td>按接口响应结构解析。</td></tr>
+            <tr><td>400</td><td>路径参数、模型类型或 JSON 请求体错误。</td><td>检查 UUID 格式、type-path 和请求体。</td></tr>
+            <tr><td>404</td><td>对象或结果为空/不存在。</td><td>确认数据库、UUID、结果是否已被释放或超时清理。</td></tr>
+            <tr><td>500</td><td>数据库、模型链接或计算内部错误。</td><td>查看 gdt-server 日志并核对模型。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="api-reference">
+        <div class="toolbar">
+          <div class="toolbar-row">
+            <input id="search" type="search" placeholder="搜索路径、用途、参数或标签…">
+            <select id="category-filter"><option value="">全部分类</option></select>
+            <select id="method-filter">
+              <option value="">全部方法</option><option>GET</option><option>POST</option>
+              <option>PUT</option><option>DELETE</option>
+            </select>
+            <select id="relevance-filter">
+              <option value="">全部相关性</option>
+              <option value="core">仅 PCF 核心</option>
+              <option value="non-core">非核心接口</option>
+            </select>
+            <select id="status-filter">
+              <option value="">全部状态</option>
+              <option value="available">只读模式可用</option>
+              <option value="readonly">只读模式不可用</option>
+              <option value="deprecated">已废弃</option>
+              <option value="direct">需直接 HTTP 调用</option>
+            </select>
+          </div>
+          <div class="toolbar-row">
+            <button id="expand-all" type="button">全部展开</button>
+            <button id="collapse-all" type="button">全部折叠</button>
+            <button id="reset-filter" type="button">重置筛选</button>
+            <strong class="result-count" id="result-count">显示 66 / 66</strong>
+          </div>
+        </div>
+        <div id="api-list"></div>
+      </section>
+
+      <section id="sources" class="panel content-panel">
+        <h2>版本与资料来源</h2>
+        <ul>
+          <li><a href="https://github.com/GreenDelta/gdt-server/tree/2e3a1787c13ca119761942b8855ac31407cbb4cd">
+            gdt-server 固定提交源码</a>：路由以 <code>Server.java</code> 为准。</li>
+          <li><a href="https://greendelta.github.io/openLCA-ApiDoc/ipc/">openLCA IPC 文档</a>。</li>
+          <li>请求体和响应结构依据项目当前安装的 <code>olca-schema 2.6.2</code>、
+            <code>olca-ipc 2.6.3</code> 进行交叉核对。</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <a id="top-link" href="#top" aria-label="返回顶部">↑ 顶部</a>
+  <footer>生成日期：2026-06-20。路由文档与固定服务版本绑定；升级 gdt-server 后必须重新核对。</footer>
+
+  <script id="api-data" type="application/json">
+[
+  {"method":"GET","path":"/api/version","category":"版本与健康","title":"查看服务版本","purpose":"确认 gdt-server 已启动，并查看版本及原生求解库是否加载。","response":"版本对象：version、isBlasEnabled、isUmfpackEnabled。","body":"none","flags":["core"],"client":"direct"},
+  {"method":"GET","path":"/data/providers","category":"数据查询","title":"列出全部可用提供者","purpose":"查看数据库中可以作为产品流提供者的技术流，常用于分析过程链接。","response":"TechFlow 数组。","body":"none","flags":[],"client":"wrapped"},
+  {"method":"GET","path":"/data/providers/{id}","category":"数据查询","title":"查询某条流的提供者","purpose":"给定流 UUID，列出能够生产或提供该流的过程。","response":"TechFlow 数组。","body":"none","flags":[],"client":"wrapped"},
+  {"method":"GET","path":"/data/{type-path}","category":"数据查询","title":"列出某类对象的描述符","purpose":"只取 UUID、名称、分类等轻量信息；查找 Product System、Impact Method 和 Process UUID 时优先使用。","response":"Ref 描述符数组。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/data/{type-path}/all","category":"数据查询","title":"读取某类对象的完整数据","purpose":"一次返回某类对象的完整 JSON-LD 内容，数据量可能很大。","response":"完整实体数组。","body":"none","flags":[],"client":"wrapped"},
+  {"method":"GET","path":"/data/{type-path}/name/<name>","category":"数据查询","title":"按名称读取对象","purpose":"按名称寻找并返回完整对象；名称可能重复，正式集成更建议使用 UUID。","response":"单个完整实体。","body":"none","flags":[],"client":"wrapped"},
+  {"method":"GET","path":"/data/{type-path}/{id}","category":"数据查询","title":"按 UUID 读取完整对象","purpose":"获取指定 openLCA 对象的完整 JSON-LD 数据。","response":"单个完整实体。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/data/{type-path}/{id}/info","category":"数据查询","title":"按 UUID 读取描述符","purpose":"确认对象存在并获取轻量 Ref，而不用下载完整模型。","response":"Ref 描述符。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/data/{type-path}/{id}/parameters","category":"数据查询","title":"读取对象参数","purpose":"查看 Product System、Project、Process 等对象的参数名、默认值和 context；PCF 参数化计算前必须核对。","response":"Parameter 或 ParameterRedef 数组。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"PUT","path":"/data/{type-path}","category":"数据写入","title":"新建或更新数据库对象","purpose":"把完整 JSON-LD 实体写入数据库。当前项目以只读方式启动，因此该路由不会注册。","response":"写入对象的 Ref。","body":"entity","flags":["readonly"],"client":"wrapped"},
+  {"method":"POST","path":"/data/create-system","category":"数据写入","title":"从过程创建 Product System","purpose":"以某个过程为起点按链接规则自动生成 Product System。当前只读模式不可用。","response":"新 Product System 的 Ref。","body":"linking","flags":["readonly"],"client":"wrapped"},
+  {"method":"DELETE","path":"/data/{type-path}/{id}","category":"数据写入","title":"删除数据库对象","purpose":"按类型和 UUID 删除对象。危险操作，当前只读模式不会注册。","response":"被删除对象的 Ref。","body":"none","flags":["readonly"],"client":"wrapped"},
+  {"method":"POST","path":"/result/calculate","category":"计算生命周期","title":"启动正式计算","purpose":"提交 CalculationSetup，创建异步计算任务，并返回临时结果句柄。","response":"ResultState：@id、isScheduled、isReady、error、time。","body":"calculation","flags":["core"],"client":"wrapped"},
+  {"method":"POST","path":"/result/simulate","category":"计算生命周期","title":"启动模拟计算","purpose":"创建可继续推进的模拟结果，适合模拟类工作流；普通 PCF 计算使用 calculate。","response":"ResultState。","body":"calculation","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/result/{id}/simulate/next","category":"计算生命周期","title":"推进下一步模拟","purpose":"让已创建的模拟结果继续执行下一步。","response":"更新后的 ResultState。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/result/{id}/dispose","category":"计算生命周期","title":"释放计算结果","purpose":"主动释放服务器内存中的临时结果。所有计算查询完成后都必须调用。","response":"释放后的 ResultState。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"DELETE","path":"/result/{id}","category":"计算生命周期","title":"释放计算结果（DELETE）","purpose":"与 POST dispose 等价，用 DELETE 语义释放临时结果。","response":"释放后的 ResultState。","body":"none","flags":[],"client":"direct"},
+  {"method":"GET","path":"/result/{id}/state","category":"计算生命周期","title":"查询计算状态","purpose":"轮询任务是否仍在排队、已完成或发生错误。","response":"ResultState。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/demand","category":"结果基础索引","title":"获取计算需求","purpose":"查看该计算的目标技术流及需求量。","response":"TechFlowValue。","body":"none","flags":[],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/tech-flows","category":"结果基础索引","title":"列出技术流索引","purpose":"取得结果中的 provider/产品流组合，供其他技术流路径接口使用。","response":"TechFlow 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/envi-flows","category":"结果基础索引","title":"列出环境流索引","purpose":"取得结果中的基本流及地点，供清单流接口使用。","response":"EnviFlow 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/impact-categories","category":"结果基础索引","title":"列出影响类别","purpose":"查看本次计算包含哪些 LCIA 影响类别及其 UUID。","response":"Ref 数组。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/scaling-factors","category":"技术流需求","title":"获取缩放因子","purpose":"查看每个技术流在矩阵求解中的缩放系数。","response":"TechFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-requirements","category":"技术流需求","title":"获取全部技术流总需求","purpose":"查看满足功能单位时，各技术流累计需要多少。","response":"TechFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-requirements-of/{tech-flow}","category":"技术流需求","title":"获取指定技术流总需求","purpose":"只查询某个 provider/flow 组合的累计需求量。","response":"TechFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/scaled-tech-flows-of/{tech-flow}","category":"技术流需求","title":"获取指定技术流的缩放后依赖","purpose":"查看目标技术流经系统缩放后关联的技术流值。","response":"TechFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/unscaled-tech-flows-of/{tech-flow}","category":"技术流需求","title":"获取指定技术流的未缩放依赖","purpose":"查看目标技术流原始、未按功能单位缩放的关联值。","response":"TechFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-flows","category":"清单流结果","title":"获取全部环境流总量","purpose":"返回生命周期清单（LCI）中每条环境流的总输入或总排放。","response":"EnviFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-flow-value-of/{envi-flow}","category":"清单流结果","title":"获取指定环境流总量","purpose":"查询某条基本流（可带地点）的总结果。","response":"EnviFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/flow-contributions-of/{envi-flow}","category":"清单流结果","title":"获取环境流的过程贡献","purpose":"查看哪些技术流/过程贡献了指定环境流，以及各自贡献量。","response":"TechFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/direct-interventions-of/{tech-flow}","category":"清单流结果","title":"获取技术流直接环境交换","purpose":"查看指定技术流自身直接产生或消耗的全部环境流。","response":"EnviFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/direct-intervention-of/{envi-flow}/{tech-flow}","category":"清单流结果","title":"获取单条直接环境交换","purpose":"查询某技术流对某环境流的直接值。","response":"EnviFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/flow-intensities-of/{tech-flow}","category":"清单流结果","title":"获取技术流的环境流强度","purpose":"返回指定技术流单位需求对应的各环境流强度。","response":"EnviFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/flow-intensity-of/{envi-flow}/{tech-flow}","category":"清单流结果","title":"获取单条环境流强度","purpose":"查询指定技术流对指定环境流的单位强度。","response":"EnviFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-interventions-of/{tech-flow}","category":"清单流结果","title":"获取技术流累计环境交换","purpose":"查看指定技术流直接与上游合计的全部环境流结果。","response":"EnviFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-intervention-of/{envi-flow}/{tech-flow}","category":"清单流结果","title":"获取单条累计环境交换","purpose":"查询指定技术流对指定环境流的直接加上游总值。","response":"EnviFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/result/{id}/upstream-interventions-of/{envi-flow}","category":"上游分析与桑基图","title":"查询环境流上游节点","purpose":"沿指定技术流路径展开某环境流的上游贡献节点。","response":"UpstreamNode 数组。","body":"path","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-impacts","category":"环境影响结果","title":"获取全部影响类别总结果","purpose":"返回 Climate change 等各 LCIA 类别总量，是 PCF 读取碳足迹总值的核心接口。","response":"ImpactValue 数组。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-impacts/normalized","category":"环境影响结果","title":"获取归一化影响结果","purpose":"按 CalculationSetup 中的归一化集合返回归一化值。","response":"ImpactValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-impacts/weighted","category":"环境影响结果","title":"获取加权影响结果","purpose":"按 CalculationSetup 中的权重集合返回加权值。","response":"ImpactValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-impact-value-of/{impact-category}","category":"环境影响结果","title":"获取指定影响类别总值","purpose":"只读取一个影响类别的总结果，例如 Climate change。","response":"ImpactValue。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/impact-contributions-of/{impact-category}","category":"环境影响结果","title":"获取影响类别的过程贡献","purpose":"查看每个 provider/过程对指定影响类别贡献多少；当前 PCF 用它汇总阶段贡献。","response":"TechFlowValue 数组。","body":"none","flags":["core"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/direct-impacts-of/{tech-flow}","category":"环境影响结果","title":"获取技术流直接影响","purpose":"查看某技术流自身直接产生的所有影响类别结果。","response":"ImpactValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/direct-impact-of/{impact-category}/{tech-flow}","category":"环境影响结果","title":"获取单项直接影响","purpose":"查询某技术流对某影响类别的直接结果。","response":"ImpactValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/impact-intensities-of/{tech-flow}","category":"环境影响结果","title":"获取技术流影响强度","purpose":"查看指定技术流单位需求对应的全部影响类别强度。","response":"ImpactValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/impact-intensity-of/{impact-category}/{tech-flow}","category":"环境影响结果","title":"获取单项影响强度","purpose":"查询指定技术流对指定影响类别的单位强度。","response":"ImpactValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-impacts-of/{tech-flow}","category":"环境影响结果","title":"获取技术流累计影响","purpose":"查看某技术流直接加上游的全部影响类别结果。","response":"ImpactValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-impact-of/{impact-category}/{tech-flow}","category":"环境影响结果","title":"获取单项累计影响","purpose":"查询某技术流对某影响类别的直接加上游总结果。","response":"ImpactValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/impact-factors-of/{impact-category}","category":"环境影响结果","title":"获取影响类别特征化因子","purpose":"列出指定影响类别对各环境流采用的影响因子。","response":"EnviFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/impact-factor-of/{impact-category}/{envi-flow}","category":"环境影响结果","title":"获取单条特征化因子","purpose":"查询某影响类别对某环境流的影响因子。","response":"EnviFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/flow-impacts-of/{impact-category}","category":"环境影响结果","title":"获取环境流影响贡献","purpose":"查看各环境流对指定影响类别贡献多少。","response":"EnviFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/flow-impact-of/{impact-category}/{envi-flow}","category":"环境影响结果","title":"获取单条环境流影响","purpose":"查询某环境流对某影响类别的贡献值。","response":"EnviFlowValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/result/{id}/upstream-impacts-of/{impact-category}","category":"上游分析与桑基图","title":"查询影响类别上游节点","purpose":"沿指定技术流路径展开某影响类别的上游贡献。","response":"UpstreamNode 数组。","body":"path","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-costs","category":"成本结果","title":"获取总成本","purpose":"读取整个计算系统的总成本；计算时需启用 withCosts。","response":"CostValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/cost-contributions","category":"成本结果","title":"获取过程成本贡献","purpose":"查看各技术流/过程对总成本贡献多少。","response":"TechFlowValue 数组。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-cost-values","category":"成本结果","title":"获取总成本值集合","purpose":"返回服务端定义的总成本值集合；当前 Python olca-ipc 没有直接封装。","response":"成本值 JSON。","body":"none","flags":["advanced","direct"],"client":"direct"},
+  {"method":"GET","path":"/result/{id}/direct-costs-of/{tech-flow}","category":"成本结果","title":"获取技术流直接成本","purpose":"查询某技术流自身直接发生的成本。","response":"CostValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/cost-intensities-of/{tech-flow}","category":"成本结果","title":"获取技术流成本强度","purpose":"查询某技术流单位需求对应的成本。","response":"CostValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"GET","path":"/result/{id}/total-costs-of/{tech-flow}","category":"成本结果","title":"获取技术流累计成本","purpose":"查询某技术流直接加上游的总成本。","response":"CostValue。","body":"none","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/result/{id}/upstream-costs-of","category":"上游分析与桑基图","title":"查询上游成本节点","purpose":"沿指定技术流路径展开上游成本贡献。","response":"UpstreamNode 数组。","body":"path","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/result/{id}/sankey","category":"上游分析与桑基图","title":"生成桑基图数据","purpose":"按环境流、影响类别或成本生成节点和边数据，供前端绘制 Sankey 图。","response":"SankeyGraph：nodes、edges、rootIndex。","body":"sankey","flags":["advanced"],"client":"wrapped"},
+  {"method":"POST","path":"/results/calculate","category":"旧版兼容接口","title":"旧版启动计算","purpose":"早期 API 的兼容路径。新代码必须使用 /result/calculate。","response":"ResultState。","body":"calculation","flags":["deprecated"],"client":"direct"},
+  {"method":"POST","path":"/results/{id}/dispose","category":"旧版兼容接口","title":"旧版释放结果","purpose":"早期 API 的兼容路径。新代码使用 /result/{id}/dispose。","response":"ResultState。","body":"none","flags":["deprecated"],"client":"direct"},
+  {"method":"DELETE","path":"/results/{id}","category":"旧版兼容接口","title":"旧版 DELETE 释放结果","purpose":"早期 API 的兼容路径。新代码使用单数 /result。","response":"ResultState。","body":"none","flags":["deprecated"],"client":"direct"},
+  {"method":"GET","path":"/results/{id}/state","category":"旧版兼容接口","title":"旧版查询状态","purpose":"早期 API 的兼容路径。新代码使用 /result/{id}/state。","response":"ResultState。","body":"none","flags":["deprecated"],"client":"direct"},
+  {"method":"GET","path":"/results/{id}/total-impacts","category":"旧版兼容接口","title":"旧版查询总影响","purpose":"早期 API 的兼容路径。新代码使用 /result/{id}/total-impacts。","response":"ImpactValue 数组。","body":"none","flags":["deprecated"],"client":"direct"}
+]
+  </script>
+
+  <script>
+    "use strict";
+    const APIS = JSON.parse(document.getElementById("api-data").textContent);
+    const BASE = "http://127.0.0.1:8080";
+    const BODY_MODELS = {
+      none: { title: "请求体", rows: [], example: "" },
+      entity: {
+        title: "请求体：完整 JSON-LD 实体",
+        rows: [["@id","UUID","对象 ID"],["@type","模型类型","例如 Process"],["其他字段","随模型而定","必须符合 openLCA JSON-LD schema"]],
+        example: '{"@type":"Process","@id":"<PROCESS_UUID>","name":"Example process"}'
+      },
+      linking: {
+        title: "请求体：创建产品系统",
+        rows: [["process","Ref，必填","起点过程引用"],["config.cutoff","number，可选","链接截止阈值"],["config.preferUnitProcesses","boolean，可选","是否优先单位过程"],["config.providerLinking","枚举，可选","IGNORE_DEFAULTS / PREFER_DEFAULTS / ONLY_DEFAULTS"]],
+        example: '{"process":{"@type":"Process","@id":"<PROCESS_UUID>"},"config":{"providerLinking":"PREFER_DEFAULTS","preferUnitProcesses":true}}'
+      },
+      calculation: {
+        title: "请求体：CalculationSetup",
+        rows: [["target","Ref，核心必填","计算目标 Product System"],["impactMethod","Ref，PCF 必填","LCIA 方法"],["amount","number，可选","功能单位需求量"],["unit / flowProperty","Ref，可选","需求单位和流属性"],["parameters","ParameterRedef[]，可选","模型参数覆盖值"],["allocation","枚举，可选","分配方式"],["nwSet","Ref，可选","归一化与权重集合"],["withCosts","boolean，可选","启用成本计算"],["withRegionalization","boolean，可选","启用区域化"]],
+        example: '{"target":{"@type":"ProductSystem","@id":"<PRODUCT_SYSTEM_UUID>"},"impactMethod":{"@type":"ImpactMethod","@id":"<IMPACT_METHOD_UUID>"},"parameters":[{"name":"mass","value":2.5}]}'
+      },
+      path: {
+        title: "请求体：上游路径",
+        rows: [["path","string，可选","技术流路径；每段 providerUUID::flowUUID，段之间用 / 分隔。空值表示从根节点开始。"]],
+        example: '{"path":"<PROVIDER_UUID>::<FLOW_UUID>/<PROVIDER_UUID_2>::<FLOW_UUID_2>"}'
+      },
+      sankey: {
+        title: "请求体：SankeyRequest",
+        rows: [["impactCategory","Ref，可选","按某影响类别画图"],["enviFlow","EnviFlow，可选","按某环境流画图"],["forCosts","boolean，可选","按成本画图"],["maxNodes","integer，可选","最大节点数"],["minShare","number，可选","最小贡献占比"]],
+        example: '{"impactCategory":{"@type":"ImpactCategory","@id":"<IMPACT_CATEGORY_UUID>"},"maxNodes":50,"minShare":0.01}'
+      }
+    };
+    const PARAM_INFO = {
+      "type-path": ["模型类型路径","见上方允许值与别名表。推荐使用复数路径。"],
+      "id": ["UUID 或结果 ID","在 /data 下是实体 UUID；在 /result 下是 calculate 返回的临时结果句柄。"],
+      "tech-flow": ["技术流 ID","provider UUID::flow UUID。"],
+      "envi-flow": ["环境流 ID","flow UUID 或 flow UUID::location UUID。"],
+      "impact-category": ["影响类别 UUID","从本次结果的影响类别列表取得。"],
+      "name": ["对象名称","需 URL 编码；正式集成优先 UUID。"]
+    };
+    const CATEGORY_ORDER = ["版本与健康","数据查询","数据写入","计算生命周期","结果基础索引",
+      "技术流需求","清单流结果","环境影响结果","成本结果","上游分析与桑基图","旧版兼容接口"];
+    const TAGS = {
+      core: ["PCF 核心","core"], readonly: ["只读不可用","readonly"],
+      advanced: ["高级分析","advanced"], deprecated: ["已废弃","deprecated"],
+      direct: ["需直接 HTTP","direct"]
+    };
+
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    }
+    function placeholders(path) {
+      const normalized = path.replace(/<([^>]+)>/g, "{$1}");
+      return [...normalized.matchAll(/\{([^}]+)\}/g)].map(x => x[1]);
+    }
+    function samplePath(path) {
+      const values = {
+        "type-path":"product-systems", id:"<RESULT_OR_ENTITY_ID>",
+        "tech-flow":"<PROVIDER_UUID>::<FLOW_UUID>",
+        "envi-flow":"<FLOW_UUID>::<LOCATION_UUID>",
+        "impact-category":"<IMPACT_CATEGORY_UUID>", name:"<URL_ENCODED_NAME>"
+      };
+      return path.replace(/<([^>]+)>/g, "{$1}").replace(/\{([^}]+)\}/g, (_, key) => values[key] || `<${key.toUpperCase()}>`);
+    }
+    function curlExample(api) {
+      const body = BODY_MODELS[api.body].example;
+      const parts = [`curl -X ${api.method} "${BASE}${samplePath(api.path)}"`];
+      if (body) parts.push(`  -H "Content-Type: application/json"`, `  -d '${body}'`);
+      return parts.join(" \\\n");
+    }
+    function pythonExample(api) {
+      const map = {
+        "/api/version": 'import httpx\nprint(httpx.get("http://127.0.0.1:8080/api/version").json())',
+        "/data/{type-path}": 'import olca_ipc.rest as rest\nimport olca_schema as o\nclient = rest.RestClient("http://127.0.0.1:8080")\nfor ref in client.get_descriptors(o.ProductSystem):\n    print(ref.name, ref.id)',
+        "/data/{type-path}/{id}/info": 'ref = client.get_descriptor(o.ProductSystem, "<UUID>")',
+        "/data/{type-path}/{id}/parameters": 'params = client.get_parameters(o.ProductSystem, "<UUID>")',
+        "/result/calculate": 'result = client.calculate(setup)\nstate = result.wait_until_ready()',
+        "/result/{id}/state": 'state = result.get_state()',
+        "/result/{id}/impact-categories": 'categories = result.get_impact_categories()',
+        "/result/{id}/total-impacts": 'impacts = result.get_total_impacts()',
+        "/result/{id}/total-impact-value-of/{impact-category}": 'value = result.get_total_impact_value_of(impact_category)',
+        "/result/{id}/impact-contributions-of/{impact-category}": 'items = result.get_impact_contributions_of(impact_category)',
+        "/result/{id}/dispose": 'try:\n    impacts = result.get_total_impacts()\nfinally:\n    result.dispose()'
+      };
+      return map[api.path] || "";
+    }
+    function paramTable(api) {
+      const keys = placeholders(api.path);
+      if (!keys.length) return '<p class="muted">无路径参数；该版本没有查询字符串参数。</p>';
+      const rows = keys.map(k => `<tr><td><code>{${esc(k)}}</code></td><td>${esc(PARAM_INFO[k]?.[0] || "路径参数")}</td><td>${esc(PARAM_INFO[k]?.[1] || "")}</td></tr>`).join("");
+      return `<table><thead><tr><th>参数</th><th>格式</th><th>作用</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    function bodyTable(api) {
+      const model = BODY_MODELS[api.body];
+      if (!model.rows.length) return '<p class="muted">无请求体。</p>';
+      const rows = model.rows.map(r => `<tr><td><code>${esc(r[0])}</code></td><td>${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join("");
+      return `<table><thead><tr><th>字段</th><th>类型</th><th>作用</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+    function tagHtml(api) {
+      const flags = [...api.flags];
+      if (api.client === "direct" && !flags.includes("direct") && !flags.includes("deprecated")) flags.push("direct");
+      return flags.map(flag => `<span class="tag ${TAGS[flag]?.[1] || ""}">${TAGS[flag]?.[0] || esc(flag)}</span>`).join("");
+    }
+    function availability(api) {
+      if (api.flags.includes("readonly")) return "当前 --readonly 启动模式下不会注册此路由。";
+      if (api.flags.includes("deprecated")) return "仅为旧版本兼容，新代码不要使用。";
+      return "当前只读部署可调用。";
+    }
+    function apiCard(api, index) {
+      const py = pythonExample(api);
+      const clientText = api.client === "wrapped" ? "当前 olca-ipc 提供对应封装。"
+        : api.flags.includes("deprecated") ? "兼容路由不建议通过客户端调用。"
+        : "建议直接发送 HTTP 请求；当前客户端没有可靠的专用封装。";
+      return `<details class="endpoint ${api.flags.includes("core") ? "pcf" : ""}" data-index="${index}">
+        <summary>
+          <span class="method ${api.method}">${api.method}</span>
+          <code class="path">${esc(api.path)}</code>
+          <span class="summary-title">${esc(api.title)}</span>
+          <span class="tags">${tagHtml(api)}</span>
+        </summary>
+        <div class="details-body">
+          <div class="callout"><strong>用途：</strong>${esc(api.purpose)}</div>
+          <div class="details-grid">
+            <div><h4>路径与查询参数</h4>${paramTable(api)}</div>
+            <div><h4>${esc(BODY_MODELS[api.body].title)}</h4>${bodyTable(api)}</div>
+          </div>
+          <p><strong>返回：</strong>${esc(api.response)}</p>
+          <p><strong>可用性：</strong>${esc(availability(api))} ${esc(clientText)}</p>
+          <h4>curl 示例 <button class="copy" type="button" data-copy="curl-${index}">复制</button></h4>
+          <pre id="curl-${index}">${esc(curlExample(api))}</pre>
+          ${py ? `<h4>Python / olca-ipc 示例 <button class="copy" type="button" data-copy="py-${index}">复制</button></h4><pre id="py-${index}">${esc(py)}</pre>` : ""}
+          <p class="muted">常见错误：400 表示参数或 JSON 错误；404 表示对象/结果不存在；500 表示数据库或计算内部错误。</p>
+        </div>
+      </details>`;
+    }
+
+    const els = {
+      list: document.getElementById("api-list"), search: document.getElementById("search"),
+      category: document.getElementById("category-filter"), method: document.getElementById("method-filter"),
+      relevance: document.getElementById("relevance-filter"), status: document.getElementById("status-filter"),
+      count: document.getElementById("result-count")
+    };
+    CATEGORY_ORDER.forEach(c => els.category.insertAdjacentHTML("beforeend", `<option value="${esc(c)}">${esc(c)}</option>`));
+
+    function matches(api) {
+      const q = els.search.value.trim().toLowerCase();
+      const hay = [api.method, api.path, api.category, api.title, api.purpose, api.response, ...api.flags].join(" ").toLowerCase();
+      if (q && !hay.includes(q)) return false;
+      if (els.category.value && api.category !== els.category.value) return false;
+      if (els.method.value && api.method !== els.method.value) return false;
+      if (els.relevance.value === "core" && !api.flags.includes("core")) return false;
+      if (els.relevance.value === "non-core" && api.flags.includes("core")) return false;
+      const s = els.status.value;
+      if (s === "available" && (api.flags.includes("readonly") || api.flags.includes("deprecated"))) return false;
+      if (s === "readonly" && !api.flags.includes("readonly")) return false;
+      if (s === "deprecated" && !api.flags.includes("deprecated")) return false;
+      if (s === "direct" && !(api.client === "direct" || api.flags.includes("direct"))) return false;
+      return true;
+    }
+    function render() {
+      const filtered = APIS.map((api, index) => ({api, index})).filter(x => matches(x.api));
+      let html = "";
+      CATEGORY_ORDER.forEach(category => {
+        const items = filtered.filter(x => x.api.category === category);
+        if (!items.length) return;
+        html += `<h2 class="category-title">${esc(category)} <span>${items.length} 个接口</span></h2>`;
+        html += items.map(x => apiCard(x.api, x.index)).join("");
+      });
+      els.list.innerHTML = html || '<div class="panel empty">没有符合当前筛选条件的接口。</div>';
+      els.count.textContent = `显示 ${filtered.length} / ${APIS.length}`;
+      bindCopy();
+    }
+    function bindCopy() {
+      document.querySelectorAll("[data-copy]").forEach(button => button.addEventListener("click", async () => {
+        const text = document.getElementById(button.dataset.copy).textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+          const old = button.textContent; button.textContent = "已复制";
+          setTimeout(() => button.textContent = old, 1100);
+        } catch {
+          window.prompt("请手动复制：", text);
+        }
+      }));
+    }
+    [els.search, els.category, els.method, els.relevance, els.status].forEach(el => el.addEventListener("input", render));
+    document.getElementById("expand-all").addEventListener("click", () => document.querySelectorAll(".endpoint").forEach(x => x.open = true));
+    document.getElementById("collapse-all").addEventListener("click", () => document.querySelectorAll(".endpoint").forEach(x => x.open = false));
+    document.getElementById("reset-filter").addEventListener("click", () => {
+      els.search.value = ""; els.category.value = ""; els.method.value = "";
+      els.relevance.value = ""; els.status.value = ""; render();
+    });
+    document.getElementById("stat-total").textContent = APIS.length;
+    render();
+  </script>
+</body>
+</html>

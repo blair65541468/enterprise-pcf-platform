@@ -3,13 +3,23 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.auth import Principal, require_role
+from app.core.clock import Clock
+from app.core.db import UnitOfWork
+from app.core.dependencies import clock
+from app.core.request_context import request_id_var
 from app.db import get_db
 from app.models import AuditEvent, CalculationRun, CalculationSnapshot, Product
-from app.schemas import CalculationCreate, CalculationOut, ContributionOut, RejectionRequest
+from app.modules.calculations.schemas import (
+    CalculationCreate,
+    CalculationOut,
+    ContributionOut,
+    RejectionRequest,
+)
 from app.services.approval_service import ApprovalService
 from app.services.calculation_service import CalculationService
 from app.services.export_service import ExportService
-from app.tasks import calculate_run
+from app.tasks import dispatch_outbox
+from app.utils import hash_payload
 
 router = APIRouter(prefix="/v1/calculations", tags=["calculations"])
 
@@ -30,6 +40,7 @@ def _load_run(db: Session, run_id: str) -> CalculationRun:
 def create_calculation(
     request: CalculationCreate,
     db: Session = Depends(get_db),
+    application_clock: Clock = Depends(clock),
     principal: Principal = Depends(require_role("data_submitter")),
 ):
     product = db.scalar(select(Product).where(Product.sku == request.sku))
@@ -50,15 +61,19 @@ def create_calculation(
     if snapshot.boundary != request.boundary:
         raise HTTPException(status_code=409, detail="Boundary does not match frozen snapshot")
     try:
-        run, created = CalculationService(db).create_run(
-            snapshot=snapshot,
-            template_version=request.model_template_version,
-            impact_method=request.impact_method,
-            idempotency_key=request.idempotency_key,
-            actor=principal.subject,
-        )
+        with UnitOfWork(db) as uow:
+            run, created = CalculationService(db, clock=application_clock).create_run(
+                snapshot=snapshot,
+                template_version=request.model_template_version,
+                impact_method=request.impact_method,
+                idempotency_key=request.idempotency_key,
+                request_hash=hash_payload(request.model_dump(mode="json")),
+                actor=principal.subject,
+                request_id=request_id_var.get(),
+            )
+            uow.commit()
         if created:
-            calculate_run.delay(run.id)
+            dispatch_outbox.delay()
         return _load_run(db, run.id)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
@@ -78,10 +93,13 @@ def get_contributions(run_id: str, db: Session = Depends(get_db)):
 def submit(
     run_id: str,
     db: Session = Depends(get_db),
+    application_clock: Clock = Depends(clock),
     principal: Principal = Depends(require_role("data_submitter")),
 ):
     try:
-        return ApprovalService(db).submit(_load_run(db, run_id), principal.subject)
+        return ApprovalService(db, clock=application_clock).submit(
+            _load_run(db, run_id), principal.subject
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
@@ -90,10 +108,13 @@ def submit(
 def approve(
     run_id: str,
     db: Session = Depends(get_db),
+    application_clock: Clock = Depends(clock),
     principal: Principal = Depends(require_role("lca_reviewer")),
 ):
     try:
-        return ApprovalService(db).approve(_load_run(db, run_id), principal.subject)
+        return ApprovalService(db, clock=application_clock).approve(
+            _load_run(db, run_id), principal.subject
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
@@ -103,10 +124,13 @@ def reject(
     run_id: str,
     request: RejectionRequest,
     db: Session = Depends(get_db),
+    application_clock: Clock = Depends(clock),
     principal: Principal = Depends(require_role("lca_reviewer")),
 ):
     try:
-        return ApprovalService(db).reject(_load_run(db, run_id), principal.subject, request.reason)
+        return ApprovalService(db, clock=application_clock).reject(
+            _load_run(db, run_id), principal.subject, request.reason
+        )
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
