@@ -9,14 +9,36 @@ os.environ["OPENLCA_ENGINE"] = "mock"
 os.environ["LOCAL_AUTH_ENABLED"] = "true"
 
 import pytest
-from fastapi.testclient import TestClient
 
-from app.db import Base, SessionLocal, engine
-from app.main import app
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-openlca",
+        action="store_true",
+        default=False,
+        help="run integration tests against a configured real openLCA REST service",
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--run-openlca"):
+        return
+    skip_openlca = pytest.mark.skip(
+        reason="real openLCA integration tests require --run-openlca"
+    )
+    for item in items:
+        if "openlca_integration" in item.keywords:
+            item.add_marker(skip_openlca)
 
 
 @pytest.fixture(autouse=True)
-def clean_database():
+def clean_database(request):
+    if request.node.get_closest_marker("openlca_integration"):
+        yield
+        return
+
+    from app.db import Base, engine
+
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     yield
@@ -33,12 +55,18 @@ def clean_database():
 
 @pytest.fixture
 def db():
+    from app.db import SessionLocal
+
     with SessionLocal() as session:
         yield session
 
 
 @pytest.fixture
 def client():
+    from fastapi.testclient import TestClient
+
+    from app.main import app
+
     with TestClient(app) as test_client:
         yield test_client
 

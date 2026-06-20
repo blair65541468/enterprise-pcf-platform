@@ -35,4 +35,6 @@ packages = ["app"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-
+markers = [
+  "openlca_integration: requires an explicitly configured real openLCA REST service",
+]

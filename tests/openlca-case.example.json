@@ -1,0 +1,13 @@
+{
+  "product_system_uuid": "00000000-0000-0000-0000-000000000000",
+  "impact_method_uuid": "00000000-0000-0000-0000-000000000000",
+  "impact_method": "replace-with-the-baseline-impact-method-name",
+  "parameters": {
+    "replace_with_parameter_name": 1.0
+  },
+  "parameter_contexts": {},
+  "stage_process_uuids": {},
+  "expected_total_kg_co2e": 1.0,
+  "absolute_tolerance_kg_co2e": 0.01,
+  "relative_tolerance": 0.001
+}

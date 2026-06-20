@@ -9,4 +9,4 @@ htmlcov/
 data/
 dist/
 build/
-
+tests/openlca-case.local.json
