@@ -1,0 +1,81 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pcf
+      POSTGRES_USER: pcf
+      POSTGRES_PASSWORD: pcf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pcf -d pcf"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: pcfadmin
+      MINIO_ROOT_PASSWORD: change-me
+    ports:
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  api:
+    build: .
+    env_file: ${PCF_ENV_FILE:-.env.example}
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    volumes:
+      - ../:/workspace:ro
+
+  worker:
+    build: .
+    env_file: ${PCF_ENV_FILE:-.env.example}
+    command: celery -A app.celery_app.celery worker --loglevel=INFO --concurrency=1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    volumes:
+      - ../:/workspace:ro
+
+  # Build and enable this profile only after confirming the GreenDelta
+  # network-use licence and mounting an approved openLCA workspace.
+  openlca:
+    profiles: ["licensed-openlca"]
+    build: https://github.com/GreenDelta/gdt-server.git#main
+    command: ["-db", "${OPENLCA_DATABASE_NAME:-wardrobe-pcf}", "--readonly"]
+    volumes:
+      - ${OPENLCA_WORKSPACE_PATH:-./data/openlca}:/app/data:ro
+    mem_limit: 12g
+    expose:
+      - "8080"
+
+volumes:
+  postgres-data:
+  minio-data:
