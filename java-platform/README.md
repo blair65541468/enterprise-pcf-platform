@@ -12,6 +12,34 @@
 - Apache POI、MinIO/S3、gdt-server REST
 - Actuator、Micrometer、Prometheus、JSON 日志
 
+## 项目结构
+
+Java 版保持单 Maven 模块、单 Jar，使用 package-by-feature。每个业务模块内部采用传统分层：
+
+```text
+com.airpaq.pcf
+├── shared/                         # 配置、安全、Web、JSON、存储公共契约
+├── catalog/                        # 产品、因子、BOM、路线和映射
+├── imports/                        # Excel 导入
+├── snapshots/                      # 不可变计算快照
+├── calculations/                   # 计算、引擎、outbox 和 RabbitMQ
+├── approvals/                      # 提交、四眼审批和驳回
+├── exports/                        # JSON/Excel 导出
+├── audit/                          # 审计事件
+└── health/                         # 存活、就绪和 openLCA 健康检查
+```
+
+模块内部约定：
+
+- `api`：Controller 和请求/响应 DTO。
+- `application`：用例、事务边界及应用端口。
+- `domain`：JPA 实体、枚举、值对象和领域规则。
+- `infrastructure`：Spring Data Repository、复杂 SQL、Excel、RabbitMQ、S3 和 openLCA 适配器。
+
+跨模块只能使用 `@NamedInterface` 暴露的 API；Controller 禁止直接访问 Repository，application
+禁止依赖 infrastructure。规则由 Spring Modulith 和 ArchUnit 自动验证。详细规范见
+[`docs/java-architecture.md`](docs/java-architecture.md)。
+
 ## 本地启动
 
 Java 版本不支持 SQLite。Docker 会启动 PostgreSQL、RabbitMQ、MinIO、
@@ -116,6 +144,9 @@ cd java-platform
 .\mvnw.cmd test
 .\mvnw.cmd verify
 ```
+
+PostgreSQL 映射集成测试使用 Testcontainers，因此运行完整测试前必须启动 Docker Desktop。
+它会从空数据库执行 Flyway V1→V3，再以 Hibernate `validate` 校验实体映射。
 
 自动化测试覆盖 canonical JSON、mock 引擎、冻结 API 路径和 Modulith
 边界。`verify` 配置了 85% JaCoCo 门禁；迁移尚未达到该覆盖率时会明确失败，

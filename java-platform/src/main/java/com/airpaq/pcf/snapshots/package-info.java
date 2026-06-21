@@ -1,3 +1,3 @@
 @org.springframework.modulith.ApplicationModule(
-        allowedDependencies = {"audit", "catalog", "infrastructure"})
+        allowedDependencies = {"audit::application", "shared::json", "shared::web"})
 package com.airpaq.pcf.snapshots;

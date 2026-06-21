@@ -2,11 +2,13 @@ package com.airpaq.pcf;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.airpaq.pcf.calculations.CalculationController;
-import com.airpaq.pcf.catalog.AdminController;
-import com.airpaq.pcf.health.HealthController;
-import com.airpaq.pcf.imports.ImportController;
-import com.airpaq.pcf.snapshots.SnapshotController;
+import com.airpaq.pcf.approvals.api.ApprovalController;
+import com.airpaq.pcf.calculations.api.CalculationController;
+import com.airpaq.pcf.catalog.api.AdminController;
+import com.airpaq.pcf.exports.api.ExportController;
+import com.airpaq.pcf.health.api.HealthController;
+import com.airpaq.pcf.imports.api.ImportController;
+import com.airpaq.pcf.snapshots.api.SnapshotController;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
@@ -20,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 class ApiPathContractTest {
 
     @Test
-    void exposesTheFrozenTwentyOnePythonPaths() {
+    void exposesTheFrozenApiAndMetricsPaths() {
         var paths = new HashSet<String>();
         for (var controller :
                 List.of(
@@ -28,6 +30,8 @@ class ApiPathContractTest {
                         ImportController.class,
                         SnapshotController.class,
                         CalculationController.class,
+                        ApprovalController.class,
+                        ExportController.class,
                         AdminController.class)) {
             collect(controller, paths);
         }

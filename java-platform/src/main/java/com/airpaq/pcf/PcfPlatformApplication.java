@@ -1,6 +1,6 @@
 package com.airpaq.pcf;
 
-import com.airpaq.pcf.infrastructure.config.PcfProperties;
+import com.airpaq.pcf.shared.config.PcfProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
